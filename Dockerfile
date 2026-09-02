@@ -9,7 +9,7 @@ RUN npm ci --omit=dev
 
 COPY . .
 
-RUN mkdir -p data uploads public/logo
+RUN mkdir -p data uploads public/logo tmp
 
 EXPOSE 3000
 

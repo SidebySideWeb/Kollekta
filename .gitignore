@@ -1,4 +1,6 @@
 node_modules/
 data/*.db*
 uploads/*
+tmp/*
 .env
+"fashion_images_media_portal/" 

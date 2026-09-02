@@ -9,6 +9,7 @@ const customerRoutes = require('./routes/customer');
 const { cleanupOldAttempts } = require('./lib/rateLimit');
 const { startRetentionJob } = require('./lib/retention');
 const { takeSnapshot } = require('./lib/storage');
+const { cleanupTmpDir } = require('./lib/uploadTmp');
 const db = require('./db');
 
 const app = express();
@@ -20,11 +21,13 @@ const sharedDir = path.join(__dirname, 'public', 'shared');
 const logoDir = path.join(__dirname, 'public', 'logo');
 const tokensCss = path.join(sharedDir, 'tokens.css');
 
-for (const dir of [logoDir, sharedDir, path.join(__dirname, 'data'), path.join(__dirname, 'uploads')]) {
+for (const dir of [logoDir, sharedDir, path.join(__dirname, 'data'), path.join(__dirname, 'uploads'), path.join(__dirname, 'tmp')]) {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
 }
+
+cleanupTmpDir();
 
 app.set('trust proxy', true);
 app.use(express.json());

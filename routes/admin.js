@@ -6,6 +6,7 @@ const fs = require('fs');
 const db = require('../db');
 const { processImage, deleteImageAssets } = require('../lib/imageProcessor');
 const { uploadsDir } = require('../lib/storage');
+const { ensureTmpDir, deleteTempFile, deleteTempFiles } = require('../lib/uploadTmp');
 const { parseImageMapping, parseCustomers, parseOrders } = require('../lib/excelParser');
 const { normalizePhone, formatPhoneForDisplay } = require('../lib/phone');
 const { generateAccessCode } = require('../lib/codes');
@@ -32,10 +33,56 @@ const {
 } = require('../lib/sampleExcel');
 
 const router = express.Router();
+
+const IMAGE_MAX_FILE_BYTES = 200 * 1024 * 1024;
+const IMAGE_MAX_FILES_PER_BATCH = 20;
+const IMAGE_MAX_BATCH_BYTES = 210 * 1024 * 1024;
+
+const imageUpload = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, ensureTmpDir()),
+    filename: (_req, file, cb) => {
+      const safe = String(file.originalname || 'image').replace(/[^a-zA-Z0-9._-]/g, '_');
+      cb(null, `${Date.now()}-${Math.random().toString(36).slice(2)}-${safe}`);
+    },
+  }),
+  limits: {
+    fileSize: IMAGE_MAX_FILE_BYTES,
+    files: IMAGE_MAX_FILES_PER_BATCH,
+  },
+});
+
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 50 * 1024 * 1024 },
 });
+
+function imageUploadErrorMessage(err) {
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    return 'Μία ή περισσότερες εικόνες ξεπερνούν το όριο 200MB ανά αρχείο.';
+  }
+  if (err.code === 'LIMIT_FILE_COUNT') {
+    return `Η παρτίδα περιέχει πάνω από ${IMAGE_MAX_FILES_PER_BATCH} εικόνες. Το σύστημα ανεβάζει αυτόματα σε παρτίδες — δοκίμασε ξανά.`;
+  }
+  if (err.code === 'LIMIT_UNEXPECTED_FILE') {
+    return 'Μη έγκυρο πεδίο ανεβάσματος εικόνων.';
+  }
+  if (err.type === 'entity.too.large') {
+    return 'Η παρτίδα ξεπερνά το επιτρεπόμενο μέγεθος (περίπου 200MB). Μείωσε τον αριθμό ή το μέγεθος των εικόνων ανά επιλογή.';
+  }
+  return err.message || 'Αποτυχία ανεβάσματος εικόνων.';
+}
+
+function handleImageUpload(req, res, next) {
+  imageUpload.array('images', IMAGE_MAX_FILES_PER_BATCH)(req, res, (err) => {
+    if (!err) return next();
+    deleteTempFiles(req.files);
+    const status = err.code === 'LIMIT_FILE_SIZE' || err.code === 'LIMIT_FILE_COUNT' || err.type === 'entity.too.large'
+      ? 413
+      : 400;
+    return res.status(status).json({ error: imageUploadErrorMessage(err) });
+  });
+}
 
 function collectionHasOrders(collectionId) {
   return (
@@ -86,14 +133,24 @@ router.get('/collections/:id', (req, res) => {
   });
 });
 
-router.post('/collections/:id/images', upload.array('images', 500), async (req, res) => {
+router.post('/collections/:id/images', handleImageUpload, async (req, res) => {
   const collectionId = Number(req.params.id);
   const collection = db.prepare('SELECT id FROM collections WHERE id = ?').get(collectionId);
+  const files = req.files || [];
+
   if (!collection) {
+    deleteTempFiles(files);
     return res.status(404).json({ error: 'Η συλλογή δεν βρέθηκε.' });
   }
 
-  const files = req.files || [];
+  const batchBytes = files.reduce((sum, file) => sum + (file.size || 0), 0);
+  if (batchBytes > IMAGE_MAX_BATCH_BYTES) {
+    deleteTempFiles(files);
+    return res.status(413).json({
+      error: 'Η παρτίδα ξεπερνά το επιτρεπόμενο συνολικό μέγεθος (περίπου 200MB). Το σύστημα ανεβάζει αυτόματα σε παρτίδες — δοκίμασε ξανά.',
+    });
+  }
+
   const results = [];
   let uploaded = 0;
 
@@ -106,7 +163,7 @@ router.post('/collections/:id/images', upload.array('images', 500), async (req, 
 
   for (const file of files) {
     try {
-      const paths = await processImage(file.buffer, collectionId, file.originalname);
+      const paths = await processImage(file.path, collectionId, file.originalname);
       insertImage.run(
         collectionId,
         file.originalname,
@@ -121,6 +178,8 @@ router.post('/collections/:id/images', upload.array('images', 500), async (req, 
       results.push({ filename: file.originalname, ok: true });
     } catch (error) {
       results.push({ filename: file.originalname, ok: false, error: error.message });
+    } finally {
+      deleteTempFile(file.path);
     }
   }
 

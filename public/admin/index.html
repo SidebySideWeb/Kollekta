@@ -202,6 +202,13 @@
     <div class="upload-overlay-card">
       <div class="spinner" aria-hidden="true"></div>
       <p id="upload-overlay-text">Ανέβασμα εικόνων...</p>
+      <div id="upload-overlay-progress-wrap" class="upload-progress-wrap hidden">
+        <div class="upload-progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+          <div id="upload-overlay-progress" class="upload-progress-bar"></div>
+        </div>
+        <p id="upload-overlay-progress-label" class="upload-progress-label"></p>
+      </div>
+      <ul id="upload-overlay-failures" class="upload-failures hidden" aria-live="polite"></ul>
     </div>
   </div>
 

@@ -14,6 +14,10 @@ let customerFiltersBound = false;
 let galleryModalCollectionId = null;
 let galleryModalImages = [];
 const gallerySelectedIds = new Set();
+let imageUploadInProgress = false;
+
+const IMAGE_BATCH_MAX_BYTES = 200 * 1024 * 1024;
+const IMAGE_BATCH_MAX_FILES = 20;
 
 function escapeHtml(v) {
   return String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -189,14 +193,91 @@ function showToast(message, type = 'success', title = '') {
   host.classList.add(type === 'error' ? 'toast-error' : 'toast-success');
 }
 
-function setUploadLoading(active, message = 'Ανέβασμα εικόνων...') {
+function setUploadLoading(active, message = 'Ανέβασμα εικόνων...', options = {}) {
   const overlay = document.getElementById('upload-overlay');
   const text = document.getElementById('upload-overlay-text');
+  const progressWrap = document.getElementById('upload-overlay-progress-wrap');
+  const progressBar = document.getElementById('upload-overlay-progress');
+  const progressLabel = document.getElementById('upload-overlay-progress-label');
+  const failuresEl = document.getElementById('upload-overlay-failures');
+  const { progress = null, blockNavigation = false, failures = [] } = options;
+
   if (!overlay) return;
   if (text) text.textContent = message;
   overlay.classList.toggle('hidden', !active);
   overlay.setAttribute('aria-busy', active ? 'true' : 'false');
   document.getElementById('upload-images-btn')?.toggleAttribute('disabled', active);
+  document.getElementById('back-collection-btn')?.toggleAttribute('disabled', active && blockNavigation);
+
+  const showProgress = active && progress && progress.total > 0;
+  progressWrap?.classList.toggle('hidden', !showProgress);
+  if (showProgress && progressBar) {
+    const pct = Math.min(100, Math.round((progress.current / progress.total) * 100));
+    progressBar.style.width = `${pct}%`;
+    progressBar.parentElement?.setAttribute('aria-valuenow', String(pct));
+  }
+  if (progressLabel) {
+    progressLabel.textContent = showProgress ? `${progress.current} / ${progress.total}` : '';
+  }
+
+  if (failuresEl) {
+    const list = failures.length ? failures : [];
+    failuresEl.classList.toggle('hidden', !list.length);
+    failuresEl.innerHTML = list.map((item) => `<li>${escapeHtml(item)}</li>`).join('');
+  }
+
+  if (blockNavigation) {
+    if (active) {
+      imageUploadInProgress = true;
+      window.addEventListener('beforeunload', beforeUnloadDuringImageUpload);
+    } else {
+      imageUploadInProgress = false;
+      window.removeEventListener('beforeunload', beforeUnloadDuringImageUpload);
+    }
+  }
+}
+
+function beforeUnloadDuringImageUpload(event) {
+  event.preventDefault();
+  event.returnValue = '';
+}
+
+function groupImageFilesIntoBatches(fileList) {
+  const batches = [];
+  let current = [];
+  let currentBytes = 0;
+
+  for (const file of fileList) {
+    const exceedsCount = current.length >= IMAGE_BATCH_MAX_FILES;
+    const exceedsBytes = current.length > 0 && currentBytes + file.size > IMAGE_BATCH_MAX_BYTES;
+    if (exceedsCount || exceedsBytes) {
+      batches.push(current);
+      current = [];
+      currentBytes = 0;
+    }
+    current.push(file);
+    currentBytes += file.size;
+  }
+
+  if (current.length) batches.push(current);
+  return batches;
+}
+
+async function uploadImageBatch(batch) {
+  const fd = new FormData();
+  batch.forEach((file) => fd.append('images', file));
+  const res = await fetch(`${API}/collections/${currentCollectionId}/images`, {
+    method: 'POST',
+    credentials: 'include',
+    body: fd,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const error = new Error(data.error || 'Σφάλμα αιτήματος.');
+    error.status = res.status;
+    throw error;
+  }
+  return data;
 }
 
 function hideToast() {
@@ -404,7 +485,7 @@ function renderWizard(collection, audience = { visibility: 'all', selectedTags: 
     <article class="step-card">
       <div class="step-header"><span class="step-number">1</span><div>
         <h3>Φωτογραφίες συλλογής</h3>
-        <p>Ανέβασε τις φωτογραφίες (JPG, PNG, HEIC).</p>
+        <p>Ανέβασε τις φωτογραφίες (JPG, PNG, HEIC). Οι μεγάλες συλλογές ανεβαίνουν αυτόματα σε παρτίδες.</p>
       </div></div>
       <div class="step-body">
         ${renderFileUploadRow({
@@ -550,24 +631,67 @@ async function uploadImages() {
   const input = document.getElementById('images-input');
   if (!input?.files.length) return setStatus('status-images', 'Επίλεξε εικόνες.', 'error');
 
-  const total = input.files.length;
-  setUploadLoading(true, `Ανέβασμα ${total} εικόν${total === 1 ? 'ας' : 'ων'}...`);
+  const files = [...input.files];
+  const total = files.length;
+  const batches = groupImageFilesIntoBatches(files);
+  const allResults = [];
+  const batchFailures = [];
+  let uploaded = 0;
+  let processed = 0;
+
   setStatus('status-images', '');
+  setUploadLoading(true, `Ανέβασμα 0 από ${total} εικόνες...`, {
+    blockNavigation: true,
+    progress: { current: 0, total },
+    failures: [],
+  });
 
   try {
-    const fd = new FormData();
-    [...input.files].forEach((f) => fd.append('images', f));
-    const r = await api(`/collections/${currentCollectionId}/images`, { method: 'POST', body: fd });
-    const failed = (r.results || []).filter((item) => !item.ok).length;
-    input.value = '';
+    for (const batch of batches) {
+      try {
+        const response = await uploadImageBatch(batch);
+        allResults.push(...(response.results || []));
+        uploaded += response.uploaded || 0;
+      } catch (err) {
+        const label = batch.length === 1
+          ? batch[0].name
+          : `Παρτίδα ${batch.length} αρχείων`;
+        batchFailures.push(`${label}: ${err.message}`);
+        for (const file of batch) {
+          allResults.push({ filename: file.name, ok: false, error: err.message });
+        }
+      }
 
+      processed += batch.length;
+      setUploadLoading(true, `Ανέβασμα ${processed} από ${total} εικόνες...`, {
+        blockNavigation: true,
+        progress: { current: processed, total },
+        failures: batchFailures,
+      });
+    }
+
+    input.value = '';
     await openCollection(currentCollectionId, document.getElementById('detail-title').textContent);
-    showToast(`Ανέβηκαν ${r.uploaded} από ${total} εικόνες.${failed ? ` ${failed} απέτυχαν.` : ''}`, failed ? 'error' : 'success', 'Ανέβασμα ολοκληρώθηκε');
+
+    const failed = allResults.filter((item) => !item.ok);
+    const failedCount = failed.length;
+    const summaryType = failedCount && !uploaded ? 'error' : failedCount ? 'error' : 'success';
+    const summary = `Ανέβηκαν ${uploaded} από ${total} εικόνες.${failedCount ? ` ${failedCount} απέτυχαν.` : ''}`;
+
+    if (failedCount) {
+      const detail = failed.slice(0, 5).map((item) => `${item.filename}: ${item.error}`).join(' · ');
+      const extra = failedCount > 5 ? ` (+${failedCount - 5} ακόμα)` : '';
+      setStatus('status-images', `${summary} ${detail}${extra}`, 'error');
+    } else {
+      setStatus('status-images', summary, 'success');
+    }
+
+    showToast(summary, summaryType, 'Ανέβασμα ολοκληρώθηκε');
   } catch (err) {
     setStatus('status-images', err.message || 'Αποτυχία ανεβάσματος.', 'error');
     showToast(err.message || 'Αποτυχία ανεβάσματος.', 'error', 'Σφάλμα ανεβάσματος');
   } finally {
-    setUploadLoading(false);
+    setUploadLoading(false, 'Ανέβασμα εικόνων...', { blockNavigation: true });
   }
 }
 
@@ -844,6 +968,10 @@ document.getElementById('new-collection-form').onsubmit = async (e) => {
   loadCollections();
 };
 document.getElementById('back-collection-btn').onclick = () => {
+  if (imageUploadInProgress) {
+    const leave = confirm('Το ανέβασμα εικόνων είναι σε εξέλιξη. Θέλεις σίγουρα να φύγεις;');
+    if (!leave) return;
+  }
   currentCollectionId = null;
   document.getElementById('collection-detail-view').classList.add('hidden');
   document.getElementById('collections-list-view').classList.remove('hidden');
