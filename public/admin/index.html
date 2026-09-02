@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kollekta Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand-wrap">
+          <img id="brand-logo" class="brand-logo hidden" alt="">
+          <h1 id="brand-name">Kollekta</h1>
+          <nav class="top-nav">
+            <button type="button" class="nav-btn active" data-view="collections">Συλλογές</button>
+            <button type="button" class="nav-btn" data-view="customers">Πελάτες</button>
+            <button type="button" class="nav-btn" data-view="messages">Μηνύματα</button>
+            <button type="button" class="nav-btn" data-view="storage">Χώρος</button>
+          </nav>
+        </div>
+      </div>
+    </header>
+
+    <div class="app">
+      <main id="view-collections" class="view">
+        <section id="collections-list-view">
+          <div class="view-toolbar">
+            <h2>Συλλογές</h2>
+            <button type="button" id="new-collection-btn" class="btn btn-primary">Νέα συλλογή</button>
+          </div>
+          <form id="new-collection-form" class="inline-form hidden">
+            <input type="text" id="collection-name-input" placeholder="Όνομα συλλογής" required>
+            <button type="submit" class="btn btn-primary">Δημιουργία</button>
+            <button type="button" id="cancel-collection-btn" class="btn btn-secondary">Ακύρωση</button>
+          </form>
+          <div id="collections-list" class="card-grid"></div>
+        </section>
+
+        <section id="collection-detail-view" class="hidden">
+          <div class="view-toolbar">
+            <button type="button" id="back-collection-btn" class="btn btn-secondary">← Πίσω</button>
+            <h2 id="detail-title">Συλλογή</h2>
+          </div>
+          <div class="wizard" id="collection-wizard"></div>
+        </section>
+      </main>
+
+      <main id="view-customers" class="view hidden">
+        <div class="view-header">
+          <h2>Πελάτες</h2>
+          <p class="view-subtitle">Διαχείριση πελατολογίου και καταστάσεων λογαριασμών.</p>
+        </div>
+        <div class="view-toolbar">
+          <div class="toolbar-actions" style="margin-left:auto;">
+            <a class="btn btn-secondary" href="/api/admin/samples/customers" download="kollekta-customers-sample.xlsx">Δείγμα Excel</a>
+            <label class="btn btn-secondary file-btn">
+              Εισαγωγή Excel
+              <input type="file" id="import-customers-input" accept=".xlsx,.xls" hidden>
+            </label>
+            <button type="button" id="new-customer-btn" class="btn btn-primary">Νέος πελάτης</button>
+          </div>
+        </div>
+        <form id="new-customer-form" class="panel hidden">
+          <div class="form-grid">
+            <input type="text" name="name" placeholder="Όνομα *" required>
+            <input type="tel" name="phone" placeholder="Κινητό *" required>
+            <input type="email" name="email" placeholder="Email">
+            <input type="text" name="erpCode" placeholder="ERP κωδικός">
+            <select name="defaultAccessMode">
+              <option value="full_access">Πρόσβαση: Πλήρης πρόσβαση</option>
+              <option value="browse_all_download_order">Πρόσβαση: Περιήγηση + λήψη παραγγελίας</option>
+              <option value="order_only">Πρόσβαση: Μόνο παραγγελία</option>
+            </select>
+            <select name="preferredChannel">
+              <option value="auto">Κανάλι: Αυτόματο (Email → Viber → WhatsApp → SMS)</option>
+              <option value="email">Email</option>
+              <option value="viber">Viber</option>
+              <option value="whatsapp">WhatsApp</option>
+              <option value="sms">SMS</option>
+            </select>
+            <label class="checkbox-label"><input type="checkbox" name="sendCode" checked> Αποστολή κωδικού</label>
+          </div>
+          <p class="hint">Χωρίς email, ο κωδικός θα περάσει σε πληρωμένο κανάλι.</p>
+          <button type="submit" class="btn btn-primary">Δημιουργία</button>
+        </form>
+        <label class="checkbox-label import-option"><input type="checkbox" id="import-send-codes"> Αποστολή κωδικών κατά την εισαγωγή</label>
+        <div id="customer-result" class="panel hidden"></div>
+        <div id="import-errors" class="panel hidden"></div>
+        <div class="filter-row">
+          <input type="search" id="customer-search" placeholder="Αναζήτηση πελάτη…">
+          <select id="customer-tag-filter">
+            <option value="">Όλες οι ετικέτες</option>
+          </select>
+          <select id="customer-status-filter">
+            <option value="">Όλες οι καταστάσεις</option>
+            <option value="active">Ενεργός</option>
+            <option value="disabled">Ανενεργός</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th class="col-check"><input type="checkbox" id="customers-select-all" aria-label="Επιλογή όλων"></th>
+                <th>Όνομα</th><th>Τηλέφωνο</th><th>Email</th><th>Κατάσταση</th><th>Πρόσβαση</th><th>Κανάλι</th><th>Tags</th><th>Ενέργειες</th>
+              </tr>
+            </thead>
+            <tbody id="customers-body"></tbody>
+          </table>
+        </div>
+      </main>
+
+      <main id="view-messages" class="view hidden">
+        <div class="view-header">
+          <h2>Μηνύματα</h2>
+          <p class="view-subtitle">Τελευταίες 200 αποστολές</p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Ημ/νία</th><th>Πελάτης</th><th>Προορισμός</th><th>Κανάλι</th><th>Είδος</th><th>Κατάσταση</th></tr>
+            </thead>
+            <tbody id="messages-body"></tbody>
+          </table>
+        </div>
+      </main>
+
+      <main id="view-storage" class="view hidden">
+        <div class="view-header">
+          <h2>Χώρος αποθήκευσης</h2>
+          <p class="view-subtitle">Επισκόπηση χρήσης και διαχείριση πόρων συστήματος.</p>
+        </div>
+        <div id="storage-summary" class="storage-overview"></div>
+        <div id="storage-candidates" class="storage-candidates-panel hidden"></div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Συλλογή</th><th>Εικόνες</th><th>Full</th><th>Web</th><th>Thumb</th><th>Σύνολο</th><th></th></tr>
+            </thead>
+            <tbody id="storage-body"></tbody>
+          </table>
+        </div>
+      </main>
+    </div>
+
+    <div id="bulk-bar-host" class="bulk-bar-host">
+      <div id="bulk-customers-bar" class="bulk-bar">
+        <span class="bulk-bar-count" id="bulk-customers-count">0</span>
+        <span class="bulk-bar-label">επιλεγμένοι</span>
+        <div class="bulk-bar-actions">
+          <button type="button" class="btn btn-ghost" id="bulk-resend-btn">Επαναποστολή κωδικού</button>
+          <button type="button" class="btn btn-ghost" id="bulk-disable-btn">Απενεργοποίηση</button>
+          <button type="button" class="btn btn-ghost" id="bulk-tags-btn">Tags</button>
+          <button type="button" class="btn btn-danger" id="bulk-delete-btn">Διαγραφή</button>
+          <button type="button" class="bulk-dismiss" id="bulk-dismiss-btn" aria-label="Κλείσιμο">×</button>
+        </div>
+      </div>
+    </div>
+    <div id="bulk-tags-panel" class="panel hidden" style="position:fixed;left:50%;bottom:72px;transform:translateX(-50%);width:min(480px,calc(100% - 32px));z-index:49;">
+      <p class="subtitle">Μαζική ενημέρωση tags για τους επιλεγμένους πελάτες</p>
+      <div class="form-grid">
+        <select id="bulk-tags-mode">
+          <option value="add">Προσθήκη tags</option>
+          <option value="set">Αντικατάσταση tags</option>
+          <option value="remove">Αφαίρεση tags</option>
+        </select>
+        <input type="text" id="bulk-tags-input" placeholder="π.χ. εταιρεία-α, vip">
+      </div>
+      <div class="toolbar-actions">
+        <button type="button" class="btn btn-primary" id="bulk-tags-apply-btn">Εφαρμογή</button>
+        <button type="button" class="btn btn-secondary" id="bulk-tags-cancel-btn">Ακύρωση</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="image-gallery-modal" class="image-gallery-modal hidden" role="dialog" aria-modal="true" aria-labelledby="image-gallery-title">
+    <div class="image-gallery-backdrop" id="image-gallery-backdrop"></div>
+    <div class="image-gallery-dialog">
+      <header class="image-gallery-header">
+        <div>
+          <h2 id="image-gallery-title">Εικόνες συλλογής</h2>
+          <p id="image-gallery-subtitle" class="subtitle"></p>
+        </div>
+        <button type="button" class="image-gallery-close" id="image-gallery-close" aria-label="Κλείσιμο">×</button>
+      </header>
+      <div class="image-gallery-toolbar">
+        <button type="button" class="btn btn-secondary btn-sm" id="image-gallery-select-all">Επιλογή όλων</button>
+        <button type="button" class="btn btn-secondary btn-sm" id="image-gallery-clear">Καθαρισμός</button>
+        <span id="image-gallery-selected" class="image-gallery-selected">0 επιλεγμένες</span>
+        <button type="button" class="btn btn-primary btn-sm image-gallery-delete-btn" id="image-gallery-delete" disabled>Διαγραφή επιλεγμένων</button>
+      </div>
+      <div id="image-gallery-grid" class="image-gallery-grid"></div>
+    </div>
+  </div>
+
+  <div id="upload-overlay" class="upload-overlay hidden" aria-live="polite" aria-busy="true">
+    <div class="upload-overlay-card">
+      <div class="spinner" aria-hidden="true"></div>
+      <p id="upload-overlay-text">Ανέβασμα εικόνων...</p>
+    </div>
+  </div>
+
+  <div id="toast-host" class="toast-host hidden" role="alertdialog" aria-modal="true" aria-labelledby="toast-title">
+    <div class="toast-backdrop" id="toast-backdrop"></div>
+    <div class="toast-card">
+      <h3 id="toast-title">Ολοκληρώθηκε</h3>
+      <p id="toast-message"></p>
+      <button type="button" class="btn btn-primary" id="toast-close">OK</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

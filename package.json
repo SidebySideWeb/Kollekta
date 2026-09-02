@@ -1,0 +1,25 @@
+{
+  "name": "kollekta",
+  "version": "1.0.0",
+  "description": "Kollekta — wholesale photo collection delivery for customers",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test/smoke.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "archiver": "^7.0.1",
+    "better-sqlite3": "^13.0.3",
+    "cookie-parser": "^1.4.7",
+    "express": "^5.2.1",
+    "multer": "^2.3.0",
+    "nodemailer": "^9.1.1",
+    "sharp": "^0.35.4",
+    "uuid": "^14.0.2",
+    "xlsx": "^0.18.5"
+  }
+}

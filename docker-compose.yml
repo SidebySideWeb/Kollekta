@@ -1,0 +1,14 @@
+services:
+  kollekta:
+    build: .
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    volumes:
+      - kollekta-data:/app/data
+      - kollekta-uploads:/app/uploads
+
+volumes:
+  kollekta-data:
+  kollekta-uploads:

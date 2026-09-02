@@ -1,0 +1,50 @@
+/* Atelier Dark design tokens — see design/DESIGN.md */
+
+:root {
+  --unit: 8px;
+  --radius-sm: 0.25rem;
+  --radius: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-full: 9999px;
+
+  --background: #131319;
+  --on-background: #e4e1ea;
+  --surface-container-lowest: #0e0e13;
+  --surface-container-low: #1b1b21;
+  --surface-container: #1f1f25;
+  --surface-container-high: #2a2930;
+  --surface-container-highest: #34343b;
+  --surface-variant: #34343b;
+  --on-surface: #e4e1ea;
+  --on-surface-variant: #c9c4d5;
+  --outline: #928f9e;
+  --outline-variant: #484553;
+  --error: #ffb4ab;
+  --on-error: #690005;
+  --error-container: #93000a;
+  --primary-fixed-dim: #c8bfff;
+  --tertiary-fixed-dim: #f5be46;
+
+  /* White-label primary — overridden at runtime */
+  --accent: #8b7bf0;
+  --on-accent: #f0efec;
+
+  --success: #5cb896;
+  --warning: #d9a441;
+  --danger: #d97070;
+
+  --font-sans: 'Hanken Grotesk', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+
+  --touch-min: 44px;
+  --container-margin: 24px;
+  --gutter: 16px;
+  --safe-area-top: 44px;
+  --safe-area-bottom: 34px;
+
+  /* Storage progress thresholds — set from config via JS */
+  --storage-warn-percent: 75;
+  --storage-critical-percent: 90;
+}

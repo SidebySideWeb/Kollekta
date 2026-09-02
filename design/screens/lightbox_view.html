@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="el"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Lumière Wholesale - Lightbox</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#c8bfff",
+                        "on-primary-fixed": "#190064",
+                        "on-primary": "#2e128f",
+                        "surface-dim": "#131319",
+                        "secondary-fixed-dim": "#c7c5d0",
+                        "primary-fixed-dim": "#c8bfff",
+                        "inverse-on-surface": "#303036",
+                        "on-background": "#e4e1ea",
+                        "on-secondary-fixed-variant": "#46464f",
+                        "surface-bright": "#39383f",
+                        "tertiary-fixed": "#ffdea3",
+                        "surface-container": "#1f1f25",
+                        "surface-container-lowest": "#0e0e13",
+                        "on-primary-container": "#270289",
+                        "secondary-fixed": "#e4e1ed",
+                        "surface-container-highest": "#34343b",
+                        "inverse-surface": "#e4e1ea",
+                        "on-primary-fixed-variant": "#4532a5",
+                        "secondary": "#c7c5d0",
+                        "tertiary-fixed-dim": "#f5be46",
+                        "on-surface": "#e4e1ea",
+                        "inverse-primary": "#5d4cbf",
+                        "on-tertiary-fixed": "#261900",
+                        "tertiary-container": "#b9890a",
+                        "primary-fixed": "#e5deff",
+                        "background": "#131319",
+                        "on-tertiary-container": "#382700",
+                        "surface-tint": "#c8bfff",
+                        "surface-variant": "#34343b",
+                        "tertiary": "#f5be46",
+                        "secondary-container": "#494851",
+                        "on-error-container": "#ffdad6",
+                        "outline-variant": "#484553",
+                        "surface-container-low": "#1b1b21",
+                        "on-surface-variant": "#c9c4d5",
+                        "on-secondary-fixed": "#1b1b23",
+                        "primary-container": "#9080f6",
+                        "on-tertiary": "#412d00",
+                        "on-secondary": "#303038",
+                        "error-container": "#93000a",
+                        "error": "#ffb4ab",
+                        "surface": "#131319",
+                        "on-secondary-container": "#b9b7c2",
+                        "outline": "#928f9e",
+                        "on-tertiary-fixed-variant": "#5d4200",
+                        "on-error": "#690005",
+                        "surface-container-high": "#2a2930"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "safe-area-bottom": "34px",
+                        "touch-target-min": "44px",
+                        "unit": "8px",
+                        "container-margin": "24px",
+                        "gutter": "16px",
+                        "safe-area-top": "44px"
+                    },
+                    "fontFamily": {
+                        "code-sm": ["JetBrains Mono"],
+                        "display-lg": ["Hanken Grotesk"],
+                        "body-lg": ["Hanken Grotesk"],
+                        "headline-sm": ["Hanken Grotesk"],
+                        "label-caps": ["Hanken Grotesk"],
+                        "body-md": ["Hanken Grotesk"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "display-lg-mobile": ["Hanken Grotesk"],
+                        "code-md": ["JetBrains Mono"]
+                    },
+                    "fontSize": {
+                        "code-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "500" }],
+                        "display-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.08em", "fontWeight": "700" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "code-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface-container-lowest text-on-background h-screen w-screen overflow-hidden flex flex-col relative select-none">
+<!-- Top Navigation Suppression: Linear/Transactional/Task-focused view (Lightbox) -->
+<!-- Main Content Area: The Lightbox Canvas -->
+<main class="flex-1 w-full h-full relative flex items-center justify-center bg-black/95">
+<!-- Large Garment Image -->
+<div class="w-full h-full max-w-7xl mx-auto flex items-center justify-center p-gutter relative z-10">
+<img alt="Garment Detail" class="w-full h-auto max-h-full object-contain rounded-lg shadow-2xl transition-transform duration-300 ease-out" data-alt="A high-resolution, full-screen fashion studio shot of a high-end luxury garment. The lighting is precise, dramatic, and creates a moody, minimalist aesthetic. The background is a stark, deep black to emphasize the textures and tailoring of the piece. The overall mood is sophisticated and technical, typical of premium wholesale catalogs." id="lightbox-image" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB4muv2NmFsjFzGX1tZmTf_mhVRqzZ1CwQp2N9c56hjIbV_6691A5R-KAvSWa5ekGWpWgMlh2jEmKrD_jdpbqf8wOMvTu1T1JRRG2_9-iLN_VoVxq40_V-AKWAipMb2B5tJEbxjWSr9yIJ-CB-5XA04XLNoyBSU0t4a-NzkrcCAqfXBpYPp4IWZtF68Yu_ekCNPLzvF5bI8WusWbuBCJhgB7tK6LnLj0y8o-NPH3RA7QgL9i9FuXvOI"/>
+</div>
+<!-- Overlay Chrome: Top Area -->
+<div class="absolute top-0 left-0 w-full p-container-margin pt-safe-area-top z-20 flex justify-between items-start bg-gradient-to-b from-surface-container-lowest/80 to-transparent pointer-events-none">
+<!-- Top Left: Meta Info -->
+<div class="flex flex-col gap-1 pointer-events-auto bg-surface-container-high/40 backdrop-blur-md p-3 rounded-lg border border-outline-variant/30">
+<span class="font-code-md text-code-md text-primary-fixed-dim">SKU: AW24-009</span>
+<span class="font-body-md text-body-md text-on-surface-variant">7 / 42</span>
+</div>
+<!-- Top Right: Close Action -->
+<button aria-label="Close lightbox" class="pointer-events-auto w-touch-target-min h-touch-target-min flex items-center justify-center bg-surface-container-high/60 backdrop-blur-md rounded-full border border-outline-variant/50 text-on-background hover:bg-surface-container-highest hover:text-primary transition-all active:scale-95 group">
+<span class="material-symbols-outlined text-2xl group-hover:rotate-90 transition-transform duration-200">close</span>
+</button>
+</div>
+<!-- Middle Area: Navigation Chevrons -->
+<div class="absolute inset-y-0 left-0 w-24 flex items-center justify-start pl-4 z-20 pointer-events-none">
+<button aria-label="Previous image" class="pointer-events-auto w-12 h-12 flex items-center justify-center rounded-full bg-surface-container-low/20 backdrop-blur-sm text-on-surface-variant hover:text-primary hover:bg-surface-container-high/80 border border-transparent hover:border-outline-variant/50 transition-all active:scale-90">
+<span class="material-symbols-outlined text-3xl">chevron_left</span>
+</button>
+</div>
+<div class="absolute inset-y-0 right-0 w-24 flex items-center justify-end pr-4 z-20 pointer-events-none">
+<button aria-label="Next image" class="pointer-events-auto w-12 h-12 flex items-center justify-center rounded-full bg-surface-container-low/20 backdrop-blur-sm text-on-surface-variant hover:text-primary hover:bg-surface-container-high/80 border border-transparent hover:border-outline-variant/50 transition-all active:scale-90">
+<span class="material-symbols-outlined text-3xl">chevron_right</span>
+</button>
+</div>
+<!-- Bottom Area: Action Button -->
+<div class="absolute bottom-0 left-0 w-full pb-safe-area-bottom p-container-margin z-20 flex justify-center bg-gradient-to-t from-surface-container-lowest/80 to-transparent pointer-events-none">
+<button aria-label="Select item" class="pointer-events-auto flex items-center justify-center gap-2 bg-[#8b7bf0] hover:bg-primary-container text-[#f0efec] font-headline-sm text-headline-sm py-4 px-8 rounded-full shadow-lg transition-all active:scale-95 min-w-[200px]">
+<span class="material-symbols-outlined">check</span>
+                Επιλογή
+            </button>
+</div>
+</main>
+<script>
+        // Simple pinch-to-zoom simulation hint (visual only for this prototype)
+        const img = document.getElementById('lightbox-image');
+        let scale = 1;
+        
+        img.addEventListener('dblclick', () => {
+            scale = scale === 1 ? 1.5 : 1;
+            img.style.transform = `scale(${scale})`;
+            if(scale > 1) {
+                img.style.cursor = 'zoom-out';
+            } else {
+                img.style.cursor = 'zoom-in';
+            }
+        });
+    </script>
+</body></html>

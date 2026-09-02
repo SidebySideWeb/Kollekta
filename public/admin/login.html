@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Σύνδεση</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin/style.css">
+</head>
+<body>
+  <div class="login-page">
+    <form id="login-form" class="login-card">
+      <h1 id="login-title">Kollekta</h1>
+      <p class="subtitle">Σύνδεση διαχειριστή</p>
+      <label for="password">Κωδικός πρόσβασης</label>
+      <input type="password" id="password" placeholder="Κωδικός" required>
+      <p id="login-error" class="status-line error hidden"></p>
+      <button type="submit" class="btn btn-primary login-submit">Σύνδεση</button>
+    </form>
+  </div>
+  <script>
+    fetch('/api/branding').then(r => r.json()).then(b => {
+      document.documentElement.style.setProperty('--accent', b.accentColor || '#8b7bf0');
+      if (b.storageWarnPercent) {
+        document.documentElement.style.setProperty('--storage-warn-percent', b.storageWarnPercent);
+      }
+      if (b.storageCriticalPercent) {
+        document.documentElement.style.setProperty('--storage-critical-percent', b.storageCriticalPercent);
+      }
+      document.getElementById('login-title').textContent = b.companyName || 'Kollekta';
+      document.title = (b.companyName || 'Kollekta') + ' — Σύνδεση';
+    });
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ password: document.getElementById('password').value }),
+      });
+      if (!res.ok) {
+        document.getElementById('login-error').textContent = 'Λάθος κωδικός.';
+        document.getElementById('login-error').classList.remove('hidden');
+        return;
+      }
+      location.href = '/admin/';
+    });
+  </script>
+</body>
+</html>

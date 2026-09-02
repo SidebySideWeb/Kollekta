@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="el"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kollekta Admin - Πελάτες (Mass Edit)</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700&amp;family=Geist:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-lowest": "#0e0e13",
+                        "surface": "#131319",
+                        "error-container": "#93000a",
+                        "on-primary-fixed": "#190064",
+                        "surface-container-high": "#2a2930",
+                        "secondary": "#c7c6c4",
+                        "on-primary": "#2e128f",
+                        "tertiary-fixed": "#ffdea3",
+                        "surface-container": "#1f1f25",
+                        "on-secondary-fixed-variant": "#464745",
+                        "secondary-container": "#464745",
+                        "secondary-fixed-dim": "#c7c6c4",
+                        "on-error-container": "#ffdad6",
+                        "background": "#131319",
+                        "tertiary-fixed-dim": "#f5be46",
+                        "error": "#ffb4ab",
+                        "surface-tint": "#c8bfff",
+                        "outline": "#928f9e",
+                        "on-tertiary-fixed-variant": "#5d4200",
+                        "primary-fixed": "#e5deff",
+                        "primary-fixed-dim": "#c8bfff",
+                        "on-primary-fixed-variant": "#4532a5",
+                        "on-tertiary-fixed": "#261900",
+                        "primary": "#c8bfff",
+                        "tertiary-container": "#b9890a",
+                        "on-secondary": "#2f312f",
+                        "on-surface-variant": "#c9c4d5",
+                        "tertiary": "#f5be46",
+                        "surface-variant": "#34343b",
+                        "surface-container-low": "#1b1b21",
+                        "surface-bright": "#39383f",
+                        "on-surface": "#e4e1ea",
+                        "on-secondary-container": "#b5b5b2",
+                        "on-error": "#690005",
+                        "inverse-on-surface": "#303036",
+                        "inverse-surface": "#e4e1ea",
+                        "secondary-fixed": "#e3e2df",
+                        "on-primary-container": "#270289",
+                        "outline-variant": "#484553",
+                        "on-tertiary": "#412d00",
+                        "surface-dim": "#131319",
+                        "surface-container-highest": "#34343b",
+                        "primary-container": "#9080f6",
+                        "on-secondary-fixed": "#1b1c1a",
+                        "inverse-primary": "#5d4cbf",
+                        "on-tertiary-container": "#382700",
+                        "on-background": "#e4e1ea"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "max_width": "1600px",
+                        "base": "8px",
+                        "xl": "80px",
+                        "md": "24px",
+                        "gutter": "24px",
+                        "xs": "4px",
+                        "sm": "12px",
+                        "lg": "48px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Hanken Grotesk"],
+                        "label-caps": ["Geist"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "display": ["Hanken Grotesk"],
+                        "body-sm": ["Hanken Grotesk"],
+                        "code-md": ["Geist"],
+                        "body-lg": ["Hanken Grotesk"],
+                        "body-md": ["Hanken Grotesk"],
+                        "headline-lg": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "display": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "code-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md overflow-x-hidden">
+<!-- TopNavBar -->
+<header class="bg-surface-container-lowest border-b border-outline-variant w-full px-gutter h-16 max-w-max_width mx-auto flex justify-between items-center z-10 sticky top-0">
+<div class="flex items-center gap-lg">
+<h1 class="text-headline-md font-headline-md font-bold text-on-surface">Kollekta</h1>
+<div class="relative hidden md:block w-64">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+<input class="w-full bg-surface-container text-body-sm font-body-sm text-on-surface border-outline-variant rounded-DEFAULT pl-[36px] pr-sm py-2 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors" placeholder="Search..." type="text"/>
+</div>
+</div>
+<nav class="hidden md:flex items-center gap-md">
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors px-3 py-1 rounded-DEFAULT text-label-caps font-label-caps" href="#">Συλλογές</a>
+<a class="text-primary border-b-2 border-primary pb-1 text-label-caps font-label-caps hover:bg-surface-container-high transition-colors px-3" href="#">Πελάτες</a>
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors px-3 py-1 rounded-DEFAULT text-label-caps font-label-caps" href="#">Μηνύματα</a>
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors px-3 py-1 rounded-DEFAULT text-label-caps font-label-caps" href="#">Χώρος</a>
+</nav>
+<div class="flex items-center gap-sm">
+<button class="text-on-surface-variant hover:bg-surface-container-high p-2 rounded-full transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined text-lg">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:bg-surface-container-high p-2 rounded-full transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined text-lg">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden border border-outline-variant ml-2">
+<img alt="Admin Profile" class="w-full h-full object-cover" data-alt="A small, professional avatar image of an administrator for a sleek, dark-themed dashboard. Subtle corporate lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDduC89wgp9JOh20drBgBzgzMRBr7Wxmwz-lpGC3PHjzyXP3RPmAG7BhZ-Sgpfh9avB5xrDhn3kD9f5aI45CFBln4bskdZDb0MosqY5QbqpKdIxgnq2BWf-9xK0tzLiZjBYjdpemOIKP9Iu0YVJlEld1i6VCSWoCQcRQ1E2RiW6McVE0by7WYIrPR0RWF3UbV_f-0AqrVRUABk1LuYYRQX5zgBLUdQWw3aVVSqcv6JSTeLA7p0vzyz2"/>
+</div>
+</div>
+</header>
+<div class="flex flex-1 max-w-max_width mx-auto w-full relative">
+<!-- Main Content -->
+<main class="flex-1 p-gutter pb-32 flex flex-col gap-md max-w-[900px] mx-auto w-full">
+<!-- Page Header -->
+<div class="flex justify-between items-end mb-sm">
+<div>
+<h2 class="text-headline-lg font-headline-lg text-on-surface">Πελάτες</h2>
+<p class="text-body-md font-body-md text-on-surface-variant mt-1">Διαχείριση καταστημάτων και πρόσβασης.</p>
+</div>
+<div class="flex gap-sm">
+<button class="px-4 py-2 border border-outline-variant rounded-DEFAULT text-on-surface hover:bg-surface-container-high transition-colors text-label-caps font-label-caps flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">filter_list</span>
+                        ΦΙΛΤΡΑ
+                    </button>
+<button class="px-4 py-2 bg-primary text-on-primary-container rounded-DEFAULT hover:opacity-90 transition-opacity text-label-caps font-label-caps font-bold">
+                        ΝΕΟΣ ΠΕΛΑΤΗΣ
+                    </button>
+</div>
+</div>
+<!-- Data Table Container -->
+<div class="bg-surface border border-outline-variant rounded-lg overflow-hidden flex flex-col">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-outline-variant bg-surface-container-lowest">
+<th class="py-3 px-4 w-12 text-center">
+<input checked="" class="form-checkbox bg-surface-container border-outline-variant rounded-sm text-primary focus:ring-primary focus:ring-offset-background" type="checkbox"/>
+</th>
+<th class="py-3 px-4 text-label-caps font-label-caps text-[#706e7a]">ΚΑΤΑΣΤΗΜΑ</th>
+<th class="py-3 px-4 text-label-caps font-label-caps text-[#706e7a]">ΥΠΕΥΘΥΝΟΣ</th>
+<th class="py-3 px-4 text-label-caps font-label-caps text-[#706e7a]">ΠΕΡΙΟΧΗ</th>
+<th class="py-3 px-4 text-label-caps font-label-caps text-[#706e7a]">ΚΑΤΑΣΤΑΣΗ</th>
+<th class="py-3 px-4 text-label-caps font-label-caps text-[#706e7a] text-right">ΕΝΕΡΓΕΙΕΣ</th>
+</tr>
+</thead>
+<tbody class="text-body-sm font-body-sm divide-y divide-outline-variant">
+<!-- Row 1 Selected -->
+<tr class="hover:bg-[#26262f] transition-colors bg-surface-container-low">
+<td class="py-3 px-4 text-center">
+<input checked="" class="form-checkbox bg-surface-container border-outline-variant rounded-sm text-primary focus:ring-primary focus:ring-offset-background" type="checkbox"/>
+</td>
+<td class="py-3 px-4 font-semibold text-on-surface">Boutique Athens</td>
+<td class="py-3 px-4 text-on-surface-variant">Maria K.</td>
+<td class="py-3 px-4 text-on-surface-variant">Κολωνάκι</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#5cb896]/10 text-[#5cb896]">ΕΝΕΡΓΟΣ</span>
+</td>
+<td class="py-3 px-4 text-right">
+<button class="text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined text-[18px]">more_vert</span></button>
+</td>
+</tr>
+<!-- Row 2 Selected -->
+<tr class="hover:bg-[#26262f] transition-colors bg-surface-container-low">
+<td class="py-3 px-4 text-center">
+<input checked="" class="form-checkbox bg-surface-container border-outline-variant rounded-sm text-primary focus:ring-primary focus:ring-offset-background" type="checkbox"/>
+</td>
+<td class="py-3 px-4 font-semibold text-on-surface">Fashion Hub</td>
+<td class="py-3 px-4 text-on-surface-variant">Yannis P.</td>
+<td class="py-3 px-4 text-on-surface-variant">Γλυφάδα</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#5cb896]/10 text-[#5cb896]">ΕΝΕΡΓΟΣ</span>
+</td>
+<td class="py-3 px-4 text-right">
+<button class="text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined text-[18px]">more_vert</span></button>
+</td>
+</tr>
+<!-- Row 3 Selected -->
+<tr class="hover:bg-[#26262f] transition-colors bg-surface-container-low">
+<td class="py-3 px-4 text-center">
+<input checked="" class="form-checkbox bg-surface-container border-outline-variant rounded-sm text-primary focus:ring-primary focus:ring-offset-background" type="checkbox"/>
+</td>
+<td class="py-3 px-4 font-semibold text-on-surface">The Concept Store</td>
+<td class="py-3 px-4 text-on-surface-variant">Elena M.</td>
+<td class="py-3 px-4 text-on-surface-variant">Κηφισιά</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-outline-variant/30 text-on-surface-variant">ΑΝΑΜΟΝΗ</span>
+</td>
+<td class="py-3 px-4 text-right">
+<button class="text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined text-[18px]">more_vert</span></button>
+</td>
+</tr>
+<!-- Row 4 Unselected -->
+<tr class="hover:bg-[#26262f] transition-colors">
+<td class="py-3 px-4 text-center">
+<input class="form-checkbox bg-surface-container border-outline-variant rounded-sm text-primary focus:ring-primary focus:ring-offset-background" type="checkbox"/>
+</td>
+<td class="py-3 px-4 font-semibold text-on-surface">Urban Wear</td>
+<td class="py-3 px-4 text-on-surface-variant">Nikos G.</td>
+<td class="py-3 px-4 text-on-surface-variant">Θεσσαλονίκη</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#d97070]/10 text-[#d97070]">ΑΝΕΝΕΡΓΟΣ</span>
+</td>
+<td class="py-3 px-4 text-right">
+<button class="text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined text-[18px]">more_vert</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-4 py-3 border-t border-outline-variant flex items-center justify-between bg-surface-container-lowest">
+<span class="text-label-caps font-label-caps text-on-surface-variant">Εμφάνιση 1-4 από 42</span>
+<div class="flex gap-1">
+<button class="p-1 text-on-surface-variant hover:text-on-surface disabled:opacity-50"><span class="material-symbols-outlined">chevron_left</span></button>
+<button class="p-1 text-on-surface hover:bg-surface-container-high rounded text-body-sm px-2">1</button>
+<button class="p-1 text-on-surface-variant hover:bg-surface-container-high rounded text-body-sm px-2">2</button>
+<button class="p-1 text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined">chevron_right</span></button>
+</div>
+</div>
+</div>
+</main>
+<!-- Floating Mass Edit Bar -->
+<div class="fixed bottom-lg left-1/2 -translate-x-1/2 w-full max-w-[900px] z-50 px-gutter md:px-0">
+<div class="bg-[#26262f] border-t border-x border-[#302f3a] rounded-t-lg shadow-lg shadow-black/50 flex flex-col sm:flex-row items-center justify-between p-3 gap-3">
+<div class="flex items-center gap-3 w-full sm:w-auto">
+<span class="bg-primary text-on-primary-container px-2 py-1 rounded font-code-md text-code-md">3</span>
+<span class="text-label-caps font-label-caps text-on-surface">επιλεγμένοι</span>
+</div>
+<div class="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
+<select class="bg-surface border border-outline-variant rounded-DEFAULT text-body-sm font-body-sm text-on-surface px-2 py-1.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+<option>Αλλαγή πρόσβασης</option>
+<option>Πλήρης</option>
+<option>Περιορισμένη</option>
+</select>
+<select class="bg-surface border border-outline-variant rounded-DEFAULT text-body-sm font-body-sm text-on-surface px-2 py-1.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+<option>Προσθήκη ετικέτας</option>
+<option>VIP</option>
+<option>Νέος</option>
+</select>
+<button class="px-3 py-1.5 border border-[#302f3a] rounded-DEFAULT text-[#f0efec] hover:bg-surface-container-high transition-colors text-label-caps font-label-caps bg-transparent">
+                        Αποστολή κωδικού
+                    </button>
+<button class="px-3 py-1.5 border border-[#d97070] rounded-DEFAULT text-[#d97070] hover:bg-[#d97070]/10 transition-colors text-label-caps font-label-caps bg-transparent">
+                        Απενεργοποίηση
+                    </button>
+<button class="p-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-full transition-colors ml-1">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</body></html>
