@@ -671,6 +671,10 @@ a.btn-ghost {
   white-space: nowrap;
 }
 
+.action-buttons .download-split .btn-primary {
+  padding: 8px 20px;
+}
+
 .action-dismiss {
   width: 40px;
   height: 40px;
@@ -692,11 +696,25 @@ a.btn-ghost {
   color: var(--on-background);
 }
 
-.download-split { display: inline-flex; align-items: stretch; }
+.download-split {
+  display: inline-flex;
+  align-items: stretch;
+}
 
-.download-split .btn-primary {
+.download-split.has-size-toggle #download-btn {
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
+  padding-right: 16px;
+}
+
+.download-split #download-btn {
+  border-radius: var(--radius-full);
+}
+
+.download-split .btn-primary {
+  min-height: 40px;
+  font-size: 14px;
+  white-space: nowrap;
 }
 
 .download-chevron-btn {
@@ -707,6 +725,10 @@ a.btn-ghost {
   border-left: 1px solid rgba(240, 239, 236, 0.2);
   border-radius: 0 var(--radius-full) var(--radius-full) 0;
   min-height: 40px;
+}
+
+.download-chevron-btn.hidden {
+  display: none;
 }
 
 /* ── Lightbox ── */

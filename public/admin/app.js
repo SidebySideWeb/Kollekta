@@ -16,9 +16,40 @@ let galleryModalImages = [];
 const gallerySelectedIds = new Set();
 let imageUploadInProgress = false;
 
-const IMAGE_BATCH_MAX_BYTES = 200 * 1024 * 1024;
-const IMAGE_BATCH_MAX_FILES = 20;
+const IMAGE_BATCH_MAX_BYTES = 50 * 1024 * 1024;
+const IMAGE_BATCH_MAX_FILES = 8;
 const IMAGE_BATCH_UPLOAD_TIMEOUT_MS = 45 * 60 * 1000;
+const IMAGE_BATCH_SLOW_SECONDS = 90;
+const IMAGE_BATCH_FAST_SECONDS = 15;
+const IMAGE_LARGE_UPLOAD_BYTES = 1024 * 1024 * 1024;
+const IMAGE_UPLOAD_PROBE_BPS = (5 * 1e6) / 8;
+const IMAGE_UPLOAD_RETRY_DELAYS_MS = [2000, 5000, 12000];
+
+function fileUploadKey(file) {
+  return `${file.name}:${file.size}:${file.lastModified}`;
+}
+
+function sumFileBytes(files) {
+  return files.reduce((sum, file) => sum + (file.size || 0), 0);
+}
+
+function formatUploadSpeed(bytesPerSecond) {
+  if (!bytesPerSecond || bytesPerSecond <= 0) return '';
+  if (bytesPerSecond >= 1e6) return `${(bytesPerSecond / 1e6).toFixed(1)} MB/s`;
+  if (bytesPerSecond >= 1e3) return `${(bytesPerSecond / 1e3).toFixed(1)} KB/s`;
+  return `${Math.round(bytesPerSecond)} B/s`;
+}
+
+function formatUploadEta(seconds) {
+  if (!Number.isFinite(seconds) || seconds <= 0) return '';
+  const mins = Math.ceil(seconds / 60);
+  if (mins <= 1) return 'περίπου 1 λεπτό ακόμα';
+  return `περίπου ${mins} λεπτά ακόμα`;
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 function escapeHtml(v) {
   return String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -245,29 +276,105 @@ function beforeUnloadDuringImageUpload(event) {
   event.returnValue = '';
 }
 
-function groupImageFilesIntoBatches(fileList) {
-  const batches = [];
-  let current = [];
-  let currentBytes = 0;
+function createImageUploadSession(files) {
+  const pending = files.filter((file) => file);
+  return {
+    allFiles: pending,
+    queue: [...pending],
+    uploadedKeys: new Set(),
+    failedFiles: [],
+    totalBytes: sumFileBytes(pending),
+    completedBytes: 0,
+    inFlightBytes: 0,
+    bytesPerSecond: null,
+    adaptiveMaxBytes: IMAGE_BATCH_MAX_BYTES,
+    adaptiveMaxFiles: IMAGE_BATCH_MAX_FILES,
+    firstBatchDone: false,
+    isUploaded(file) {
+      return this.uploadedKeys.has(fileUploadKey(file));
+    },
+    completedCount() {
+      return this.allFiles.filter((file) => this.isUploaded(file)).length;
+    },
+    remainingBytes() {
+      return this.allFiles
+        .filter((file) => !this.isUploaded(file) && !this.failedFiles.some((f) => f.file === file))
+        .reduce((sum, file) => sum + file.size, 0);
+    },
+    buildNextBatch() {
+      const batch = [];
+      let batchBytes = 0;
+      while (this.queue.length) {
+        const file = this.queue[0];
+        if (this.isUploaded(file)) {
+          this.queue.shift();
+          continue;
+        }
+        if (this.failedFiles.some((entry) => entry.file === file)) {
+          this.queue.shift();
+          continue;
+        }
+        if (batch.length >= this.adaptiveMaxFiles) break;
+        if (batch.length > 0 && batchBytes + file.size > this.adaptiveMaxBytes) break;
+        batch.push(this.queue.shift());
+        batchBytes += file.size;
+      }
+      return batch;
+    },
+    markResults(results, batch) {
+      for (const result of results || []) {
+        const file = batch.find((item) => item.name === result.filename);
+        if (!file || this.isUploaded(file)) continue;
+        if (result.ok) {
+          this.uploadedKeys.add(fileUploadKey(file));
+          this.completedBytes += file.size;
+        } else {
+          this.failedFiles.push({ file, error: result.error || 'Αποτυχία ανεβάσματος.' });
+        }
+      }
+    },
+    markFailures(batch, errorMessage) {
+      for (const file of batch) {
+        if (this.isUploaded(file)) continue;
+        if (this.failedFiles.some((entry) => entry.file === file)) continue;
+        this.failedFiles.push({ file, error: errorMessage });
+      }
+    },
+    adaptAfterBatch(batchBytes, durationMs) {
+      const seconds = Math.max(durationMs / 1000, 0.1);
+      const bps = batchBytes / seconds;
+      this.bytesPerSecond = this.bytesPerSecond == null
+        ? bps
+        : this.bytesPerSecond * 0.6 + bps * 0.4;
 
-  for (const file of fileList) {
-    const exceedsCount = current.length >= IMAGE_BATCH_MAX_FILES;
-    const exceedsBytes = current.length > 0 && currentBytes + file.size > IMAGE_BATCH_MAX_BYTES;
-    if (exceedsCount || exceedsBytes) {
-      batches.push(current);
-      current = [];
-      currentBytes = 0;
-    }
-    current.push(file);
-    currentBytes += file.size;
-  }
-
-  if (current.length) batches.push(current);
-  return batches;
+      const impliedDuration = this.adaptiveMaxBytes / Math.max(this.bytesPerSecond, 1);
+      if (impliedDuration > IMAGE_BATCH_SLOW_SECONDS) {
+        this.adaptiveMaxBytes = Math.max(4 * 1024 * 1024, Math.floor(this.adaptiveMaxBytes / 2));
+        this.adaptiveMaxFiles = Math.max(1, Math.floor(this.adaptiveMaxFiles / 2));
+      } else if (seconds < IMAGE_BATCH_FAST_SECONDS) {
+        this.adaptiveMaxBytes = Math.min(IMAGE_BATCH_MAX_BYTES, Math.ceil(this.adaptiveMaxBytes * 1.3));
+        this.adaptiveMaxFiles = Math.min(IMAGE_BATCH_MAX_FILES, this.adaptiveMaxFiles + 1);
+      }
+    },
+    progressState() {
+      const total = this.allFiles.length;
+      const currentBytes = this.completedBytes + this.inFlightBytes;
+      const current = this.totalBytes ? (currentBytes / this.totalBytes) * total : this.completedCount();
+      const done = Math.min(total, Math.floor(current));
+      const speed = this.bytesPerSecond;
+      let message = `Ανέβασμα ${done} από ${total}`;
+      if (speed && speed > 0) {
+        message += ` · ${formatUploadSpeed(speed)}`;
+        const eta = formatUploadEta(this.remainingBytes() / speed);
+        if (eta) message += ` · ${eta}`;
+      }
+      return { current, total, message };
+    },
+  };
 }
 
-function isRetryableBatchError(err) {
-  return err?.status === 413 || err?.status === 408;
+function isRetryableUploadError(err) {
+  return err?.status === 408 || err?.status === 413 || err?.status === 0;
 }
 
 function uploadImageBatchXHR(batch, { onUploadProgress } = {}) {
@@ -317,31 +424,50 @@ function uploadImageBatchXHR(batch, { onUploadProgress } = {}) {
   });
 }
 
-async function uploadImageBatchWithRetry(batch, options = {}) {
-  try {
-    return await uploadImageBatchXHR(batch, options);
-  } catch (err) {
-    if (!isRetryableBatchError(err) || batch.length <= 1) {
-      throw err;
+async function uploadBatchWithRetries(batch, session, refreshUi) {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const pending = batch.filter((file) => (
+      !session.isUploaded(file)
+      && !session.failedFiles.some((entry) => entry.file === file)
+    ));
+    if (!pending.length) return;
+
+    const tryCount = Math.max(1, Math.ceil(pending.length / (2 ** attempt)));
+    const slice = pending.slice(0, tryCount);
+    const rest = pending.slice(tryCount);
+
+    if (attempt > 0) {
+      await sleep(IMAGE_UPLOAD_RETRY_DELAYS_MS[attempt - 1]);
     }
 
-    const mid = Math.ceil(batch.length / 2);
-    const halves = [batch.slice(0, mid), batch.slice(mid)];
-    const merged = { uploaded: 0, results: [] };
+    try {
+      const started = performance.now();
+      const response = await uploadImageBatchXHR(slice, {
+        onUploadProgress: ({ loaded }) => {
+          session.inFlightBytes = loaded;
+          refreshUi();
+        },
+      });
+      session.inFlightBytes = 0;
+      session.markResults(response.results || [], slice);
+      session.adaptAfterBatch(sumFileBytes(slice), performance.now() - started);
+      refreshUi();
 
-    for (const half of halves) {
-      try {
-        const response = await uploadImageBatchXHR(half, options);
-        merged.uploaded += response.uploaded || 0;
-        merged.results.push(...(response.results || []));
-      } catch (halfErr) {
-        for (const file of half) {
-          merged.results.push({ filename: file.name, ok: false, error: halfErr.message });
+      if (rest.length) {
+        await uploadBatchWithRetries(rest, session, refreshUi);
+      }
+      return;
+    } catch (err) {
+      session.inFlightBytes = 0;
+      refreshUi();
+      if (!isRetryableUploadError(err) || attempt === 2) {
+        session.markFailures(slice, err.message || 'Αποτυχία ανεβάσματος.');
+        if (rest.length) {
+          await uploadBatchWithRetries(rest, session, refreshUi);
         }
+        return;
       }
     }
-
-    return merged;
   }
 }
 
@@ -550,7 +676,7 @@ function renderWizard(collection, audience = { visibility: 'all', selectedTags: 
     <article class="step-card">
       <div class="step-header"><span class="step-number">1</span><div>
         <h3>Φωτογραφίες συλλογής</h3>
-        <p>Ανέβασε τις φωτογραφίες (JPG, PNG, HEIC). Οι μεγάλες συλλογές ανεβαίνουν αυτόματα σε παρτίδες.</p>
+        <p>Ανέβασε τις φωτογραφίες (JPG, PNG, HEIC). Οι μεγάλες συλλογές ανεβαίνουν αυτόματα σε μικρές παρτίδες (έως 50MB).</p>
       </div></div>
       <div class="step-body">
         ${renderFileUploadRow({
@@ -698,11 +824,27 @@ async function uploadImages() {
 
   const files = [...input.files];
   const total = files.length;
-  const batches = groupImageFilesIntoBatches(files);
-  const allResults = [];
+  const totalBytes = sumFileBytes(files);
+
+  if (totalBytes > IMAGE_LARGE_UPLOAD_BYTES) {
+    const estMinutes = Math.max(1, Math.ceil(totalBytes / IMAGE_UPLOAD_PROBE_BPS / 60));
+    const proceed = confirm(
+      `Θα ανεβούν ${total} εικόνες (${fmtBytes(totalBytes)}). Με τη σύνδεσή σου θα χρειαστούν περίπου ${estMinutes} λεπτά. Μην κλείσεις τη σελίδα.\n\nΗ πρώτη παρτίδα θα εκτιμήσει ακριβέστερα τον χρόνο που απομένει.`
+    );
+    if (!proceed) return;
+  }
+
+  const session = createImageUploadSession(files);
   const batchFailures = [];
-  let uploaded = 0;
-  let processed = 0;
+
+  const refreshUi = () => {
+    const { current, total: progressTotal, message } = session.progressState();
+    setUploadLoading(true, message, {
+      blockNavigation: true,
+      progress: { current, total: progressTotal },
+      failures: batchFailures,
+    });
+  };
 
   setStatus('status-images', '');
   setUploadLoading(true, `Ανέβασμα 0 από ${total} εικόνες...`, {
@@ -712,55 +854,40 @@ async function uploadImages() {
   });
 
   try {
-    for (const batch of batches) {
-      let batchUploadRatio = 0;
+    while (session.queue.length) {
+      const batch = session.buildNextBatch();
+      if (!batch.length) break;
 
-      const refreshProgress = () => {
-        const inFlight = batchUploadRatio * batch.length;
-        const current = Math.min(total, processed + inFlight);
-        setUploadLoading(true, `Ανέβασμα ${Math.floor(current)} από ${total} εικόνες...`, {
-          blockNavigation: true,
-          progress: { current, total },
-          failures: batchFailures,
-        });
-      };
+      await uploadBatchWithRetries(batch, session, refreshUi);
 
-      try {
-        const response = await uploadImageBatchWithRetry(batch, {
-          onUploadProgress: ({ loaded, total: uploadTotal }) => {
-            batchUploadRatio = uploadTotal ? loaded / uploadTotal : 0;
-            refreshProgress();
-          },
-        });
-        allResults.push(...(response.results || []));
-        uploaded += response.uploaded || 0;
-      } catch (err) {
-        const label = batch.length === 1
-          ? batch[0].name
-          : `Παρτίδα ${batch.length} αρχείων`;
-        batchFailures.push(`${label}: ${err.message}`);
-        for (const file of batch) {
-          allResults.push({ filename: file.name, ok: false, error: err.message });
+      if (!session.firstBatchDone) {
+        session.firstBatchDone = true;
+        if (totalBytes > IMAGE_LARGE_UPLOAD_BYTES && session.bytesPerSecond) {
+          const refinedMinutes = Math.max(1, Math.ceil(session.remainingBytes() / session.bytesPerSecond / 60));
+          batchFailures.push(`Εκτίμηση μετά την πρώτη παρτίδα: περίπου ${refinedMinutes} λεπτά ακόμα.`);
+          refreshUi();
         }
       }
-
-      processed += batch.length;
-      batchUploadRatio = 0;
-      refreshProgress();
     }
 
     input.value = '';
     await openCollection(currentCollectionId, document.getElementById('detail-title').textContent);
 
-    const failed = allResults.filter((item) => !item.ok);
-    const failedCount = failed.length;
+    const uploaded = session.completedCount();
+    const failedEntries = session.failedFiles;
+    const failedCount = failedEntries.length;
     const summaryType = failedCount && !uploaded ? 'error' : failedCount ? 'error' : 'success';
     const summary = `Ανέβηκαν ${uploaded} από ${total} εικόνες.${failedCount ? ` ${failedCount} απέτυχαν.` : ''}`;
 
     if (failedCount) {
-      const detail = failed.slice(0, 5).map((item) => `${item.filename}: ${item.error}`).join(' · ');
-      const extra = failedCount > 5 ? ` (+${failedCount - 5} ακόμα)` : '';
-      setStatus('status-images', `${summary} ${detail}${extra}`, 'error');
+      const names = failedEntries.map((entry) => entry.file.name);
+      const detail = names.slice(0, 8).join(', ');
+      const extra = names.length > 8 ? ` (+${names.length - 8} ακόμα)` : '';
+      setStatus(
+        'status-images',
+        `${summary} Επίλεξε ξανά μόνο: ${detail}${extra}`,
+        'error'
+      );
     } else {
       setStatus('status-images', summary, 'success');
     }

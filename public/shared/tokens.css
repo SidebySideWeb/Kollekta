@@ -35,8 +35,8 @@
   --warning: #d9a441;
   --danger: #d97070;
 
-  --font-sans: 'Hanken Grotesk', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+  --font-sans: 'Roboto', system-ui, sans-serif;
+  --font-mono: 'Roboto Mono', ui-monospace, Menlo, Consolas, monospace;
 
   --touch-min: 44px;
   --container-margin: 24px;

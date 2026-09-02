@@ -4,9 +4,15 @@ let galleryData = null;
 let collectionId = null;
 let branding = {};
 
+const MAX_AUTH_REQUESTS = 3;
+let authRequestCount = 0;
+let authRedirectedToLogin = false;
+let authMePromise = null;
+
 const DOWNLOAD_PREF_KEY = 'pd_download_size';
 const DOWNLOAD_REMEMBER_KEY = 'pd_download_remember';
-const ZIP_THRESHOLD_BYTES = 50 * 1024 * 1024;
+const ZIP_SIZE_THRESHOLD_BYTES = 50 * 1024 * 1024;
+const ZIP_COUNT_THRESHOLD = 10;
 
 let pendingDownloadIds = null;
 
@@ -63,8 +69,11 @@ function computeSelectionTotals(size) {
 }
 
 function shouldUseZip(images, size) {
-  if (images.length <= 1) return false;
-  return sumImageBytes(images, size) > ZIP_THRESHOLD_BYTES;
+  const count = images.length;
+  if (count <= 1) return false;
+  if (count >= ZIP_COUNT_THRESHOLD) return true;
+  if (count > 2 && sumImageBytes(images, size) >= ZIP_SIZE_THRESHOLD_BYTES) return true;
+  return false;
 }
 
 function filenameFromDisposition(header) {
@@ -103,21 +112,32 @@ function openDownloadSheet() {
 function updateDownloadButton() {
   const btn = document.getElementById('download-btn');
   const chevron = document.getElementById('download-options-btn');
+  const split = document.querySelector('.download-split');
   if (!btn) return;
-  const pref = getDownloadPreference();
+
+  const images = getSelectedDownloadableImages();
+  const count = images.length;
   const archived = galleryData && galleryData.fullAvailable === false;
+  const pref = getDownloadPreference();
+
+  btn.disabled = count === 0;
+
   if (archived) {
     btn.textContent = 'Λήψη';
     chevron?.classList.add('hidden');
+    split?.classList.remove('has-size-toggle');
     return;
   }
-  if (pref) {
+
+  if (pref && count > 1) {
     btn.textContent = pref === 'web' ? 'Λήψη · eshop' : 'Λήψη · εκτύπωση';
-    chevron?.classList.remove('hidden');
   } else {
     btn.textContent = 'Λήψη';
-    chevron?.classList.add('hidden');
   }
+
+  const showSizeToggle = count > 0;
+  chevron?.classList.toggle('hidden', !showSizeToggle);
+  split?.classList.toggle('has-size-toggle', showSizeToggle);
 }
 
 function handleDownloadClick() {
@@ -200,10 +220,12 @@ async function runDownload(images, size) {
   if (!images.length) return;
 
   const btn = document.getElementById('download-btn');
+  const chevron = document.getElementById('download-options-btn');
   if (btn) {
     btn.disabled = true;
     btn.textContent = 'Προετοιμασία...';
   }
+  if (chevron) chevron.disabled = true;
 
   try {
     const effectiveSize = galleryData?.fullAvailable === false ? 'web' : size;
@@ -216,6 +238,7 @@ async function runDownload(images, size) {
     }
   } finally {
     pendingDownloadIds = null;
+    if (chevron) chevron.disabled = false;
     if (btn) {
       btn.disabled = false;
       updateDownloadButton();
@@ -230,7 +253,61 @@ function path() {
   return m ? `/app/c/${m[1]}` : '/app';
 }
 
+function isLoginPath() {
+  return path() === '/app/login';
+}
+
+function resetAuthState() {
+  authRequestCount = 0;
+  authRedirectedToLogin = false;
+  authMePromise = null;
+}
+
+function redirectToLoginOnce() {
+  if (authRedirectedToLogin) return;
+  authRedirectedToLogin = true;
+  const target = '/app/login';
+  if (path() !== target) {
+    history.pushState({}, '', target);
+  }
+  render();
+}
+
+async function getAuthMe() {
+  if (isLoginPath()) return null;
+  if (authRedirectedToLogin) throw new Error('login');
+  if (authRequestCount >= MAX_AUTH_REQUESTS) {
+    console.error('[Kollekta] Auth request limit exceeded; stopping further /api/auth/me checks.');
+    throw new Error('auth-limit');
+  }
+  if (authMePromise) return authMePromise;
+
+  authMePromise = (async () => {
+    authRequestCount += 1;
+    const res = await fetch('/api/auth/me', { credentials: 'include' });
+    const data = await res.json().catch(() => ({}));
+    if (res.status === 401 || data.requiresLogin) {
+      redirectToLoginOnce();
+      throw new Error('login');
+    }
+    if (!res.ok) throw new Error(data.error || 'Σφάλμα αιτήματος.');
+    return data;
+  })();
+
+  try {
+    return await authMePromise;
+  } catch (err) {
+    authMePromise = null;
+    throw err;
+  }
+}
+
 function navigate(to) {
+  const normalized = to.replace(/\/$/, '') || to;
+  if (path() === normalized) {
+    render();
+    return;
+  }
   history.pushState({}, '', to);
   render();
 }
@@ -239,9 +316,10 @@ async function api(url, options = {}) {
   const res = await fetch(url, { credentials: 'include', ...options });
   const data = await res.json().catch(() => ({}));
   if (res.status === 401 || data.requiresLogin) {
-    navigate('/app/login');
+    redirectToLoginOnce();
     throw new Error('login');
   }
+  if (!res.ok) throw new Error(data.error || 'Σφάλμα αιτήματος.');
   return { res, data };
 }
 
@@ -326,6 +404,7 @@ function renderLogin() {
       err.textContent = 'Λάθος αριθμός ή κωδικός.';
       err.classList.remove('hidden'); return;
     }
+    resetAuthState();
     navigate('/app');
   };
   document.getElementById('reset-btn').onclick = async () => {
@@ -342,7 +421,8 @@ function renderLogin() {
 async function renderCollections() {
   let me, collections;
   try {
-    me = (await api('/api/auth/me')).data;
+    me = await getAuthMe();
+    if (!me) return;
     collections = (await api('/api/collections')).data;
   } catch { return; }
 
@@ -358,6 +438,7 @@ async function renderCollections() {
 
   document.getElementById('logout-btn').onclick = async () => {
     await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+    resetAuthState();
     navigate('/app/login');
   };
 
@@ -555,10 +636,22 @@ async function renderGallery() {
 
 async function render() {
   const p = path();
-  if (p === '/app/login') return renderLogin();
+  if (p === '/app/login' || authRedirectedToLogin) return renderLogin();
   if (p.startsWith('/app/c/')) return renderGallery();
   return renderCollections();
 }
 
+async function bootstrap() {
+  await applyBranding();
+  if (!isLoginPath()) {
+    try {
+      await getAuthMe();
+    } catch {
+      // redirectToLoginOnce already handled navigation
+    }
+  }
+  await render();
+}
+
 window.onpopstate = render;
-applyBranding().then(render);
+bootstrap();
