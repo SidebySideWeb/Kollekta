@@ -4,7 +4,8 @@ const path = require('path');
 const fs = require('fs');
 
 const db = require('../db');
-const { processImage, deleteImageAssets } = require('../lib/imageProcessor');
+const { processImageFast, deleteImageAssets } = require('../lib/imageProcessor');
+const { enqueueThumbJob } = require('../lib/imageJobs');
 const { uploadsDir } = require('../lib/storage');
 const { ensureTmpDir, deleteTempFile, deleteTempFiles } = require('../lib/uploadTmp');
 const { parseImageMapping, parseCustomers, parseOrders } = require('../lib/excelParser');
@@ -37,6 +38,24 @@ const router = express.Router();
 const IMAGE_MAX_FILE_BYTES = 200 * 1024 * 1024;
 const IMAGE_MAX_FILES_PER_BATCH = 20;
 const IMAGE_MAX_BATCH_BYTES = 210 * 1024 * 1024;
+const IMAGE_PROCESS_CONCURRENCY = Math.max(1, Math.min(4, Number(process.env.IMAGE_PROCESS_CONCURRENCY) || 3));
+
+async function mapPool(items, concurrency, fn) {
+  const results = new Array(items.length);
+  let nextIndex = 0;
+
+  async function worker() {
+    while (nextIndex < items.length) {
+      const index = nextIndex;
+      nextIndex += 1;
+      results[index] = await fn(items[index], index);
+    }
+  }
+
+  const workers = Array.from({ length: Math.min(concurrency, Math.max(items.length, 1)) }, () => worker());
+  await Promise.all(workers);
+  return results;
+}
 
 const imageUpload = multer({
   storage: multer.diskStorage({
@@ -161,26 +180,41 @@ router.post('/collections/:id/images', handleImageUpload, async (req, res) => {
      VALUES (?, ?, NULL, ?, ?, ?, ?, ?, ?)`
   );
 
-  for (const file of files) {
+  const perFile = await mapPool(files, IMAGE_PROCESS_CONCURRENCY, async (file) => {
     try {
-      const paths = await processImage(file.path, collectionId, file.originalname);
-      insertImage.run(
+      const paths = await processImageFast(file.path, collectionId, file.originalname, {
+        mimeType: file.mimetype,
+      });
+
+      // Thumb is generated in the background; until then serve web as thumb.
+      const insert = insertImage.run(
         collectionId,
         file.originalname,
         paths.fullPath,
         paths.webPath,
-        paths.thumbPath,
+        paths.webPath,
         paths.fullBytes,
         paths.webBytes,
-        paths.thumbBytes
+        paths.webBytes
       );
-      uploaded += 1;
-      results.push({ filename: file.originalname, ok: true });
+
+      enqueueThumbJob({
+        imageId: Number(insert.lastInsertRowid),
+        fullPath: paths.fullPath,
+        thumbPath: paths.thumbPath,
+      });
+
+      return { filename: file.originalname, ok: true };
     } catch (error) {
-      results.push({ filename: file.originalname, ok: false, error: error.message });
+      return { filename: file.originalname, ok: false, error: error.message };
     } finally {
       deleteTempFile(file.path);
     }
+  });
+
+  for (const item of perFile) {
+    results.push(item);
+    if (item.ok) uploaded += 1;
   }
 
   res.json({ uploaded, results });
@@ -204,7 +238,10 @@ router.get('/collections/:id/images/:imageId/:variant', (req, res) => {
   }
 
   const relPath = variant === 'thumb' ? image.thumb_path : image.web_path;
-  const filePath = path.join(uploadsDir, relPath);
+  let filePath = path.join(uploadsDir, relPath);
+  if (!fs.existsSync(filePath) && variant === 'thumb' && image.web_path) {
+    filePath = path.join(uploadsDir, image.web_path);
+  }
   if (!fs.existsSync(filePath)) {
     return res.status(404).json({ error: 'Το αρχείο εικόνας δεν βρέθηκε.' });
   }

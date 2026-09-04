@@ -53,12 +53,34 @@ function writeXlsx(filePath, rows) {
   XLSX.writeFile(wb, filePath);
 }
 
+async function waitForCollectionThumbs(collectionId, minCount, timeoutMs = 15000) {
+  const uploadsRoot = path.join(__dirname, '..', 'uploads');
+  const started = Date.now();
+  while (Date.now() - started < timeoutMs) {
+    const col = await adminFetch(`${BASE}/api/admin/collections/${collectionId}`).then((r) => r.json());
+    if ((col.images || []).length >= minCount) {
+      const ready = col.images.every((img) => {
+        const rel = String(img.thumb_path || '').replace(/\\/g, '/');
+        if (!rel.includes('/thumb/')) return false;
+        return fs.existsSync(path.join(uploadsRoot, img.thumb_path));
+      });
+      if (ready) return;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+}
+
 async function uploadImages(collectionId, images) {
   const fd = new FormData();
   for (const img of images) {
     fd.append('images', new Blob([fs.readFileSync(img.filePath)]), img.filename);
   }
-  return adminFetch(`${BASE}/api/admin/collections/${collectionId}/images`, { method: 'POST', body: fd }).then(r => r.json());
+  const result = await adminFetch(`${BASE}/api/admin/collections/${collectionId}/images`, {
+    method: 'POST',
+    body: fd,
+  }).then((r) => r.json());
+  await waitForCollectionThumbs(collectionId, images.length);
+  return result;
 }
 
 async function createCustomer(body) {

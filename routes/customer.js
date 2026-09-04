@@ -269,7 +269,10 @@ router.get('/collections/:id/image/:imageId/:variant', requireCustomer, (req, re
   }
 
   const relPath = variant === 'thumb' ? image.thumb_path : image.web_path;
-  const filePath = path.join(uploadsDir, relPath);
+  let filePath = path.join(uploadsDir, relPath);
+  if (!fs.existsSync(filePath) && variant === 'thumb' && image.web_path) {
+    filePath = path.join(uploadsDir, image.web_path);
+  }
   if (!fs.existsSync(filePath)) {
     return res.status(404).json({ error: 'Το αρχείο εικόνας δεν βρέθηκε.' });
   }
