@@ -4,6 +4,11 @@
 
 * { box-sizing: border-box; }
 
+html {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
 body {
   margin: 0;
   font-family: var(--font-sans);
@@ -13,6 +18,14 @@ body {
   color: var(--on-background);
   padding-bottom: env(safe-area-inset-bottom);
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  max-width: 100%;
+  position: relative;
+}
+
+#app-root {
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 .mono {
@@ -253,15 +266,18 @@ a.btn-ghost {
   min-height: 64px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .header h1 {
   margin: 0;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
   line-height: 28px;
   flex: 1;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -289,8 +305,17 @@ a.btn-ghost {
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 0;
   margin-left: auto;
+  flex-shrink: 0;
+  max-width: 55%;
+}
+
+.header-actions .btn-ghost {
+  padding: 8px 6px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
 }
 
 .header-actions .btn-ghost + .btn-ghost::before {
@@ -605,16 +630,18 @@ a.btn-ghost {
 
 .action-bar {
   position: fixed;
-  left: 50%;
+  left: 16px;
+  right: 16px;
   bottom: max(16px, env(safe-area-inset-bottom));
-  transform: translateX(-50%);
   z-index: 20;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 6px 6px 6px 16px;
+  gap: 8px;
+  padding: 6px 6px 6px 12px;
   min-height: 56px;
-  max-width: calc(100vw - 32px);
+  width: auto;
+  max-width: none;
+  box-sizing: border-box;
   background: var(--surface-container-high);
   border: 1px solid var(--outline-variant);
   border-radius: var(--radius-full);
@@ -625,17 +652,21 @@ a.btn-ghost {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding-right: 12px;
+  padding-right: 10px;
   border-right: 1px solid var(--outline-variant);
   min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
 }
 
 #selected-count {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   line-height: 1.2;
   color: var(--on-background);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 #selected-size {
@@ -648,9 +679,13 @@ a.btn-ghost {
   cursor: pointer;
   color: var(--on-surface-variant);
   font-family: var(--font-sans);
-  font-size: 12px;
+  font-size: 11px;
   line-height: 1.2;
   text-align: left;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 #selected-size.hidden { display: none !important; }
@@ -661,18 +696,7 @@ a.btn-ghost {
   display: flex;
   align-items: center;
   gap: var(--unit);
-}
-
-.action-buttons .btn-primary {
-  border-radius: var(--radius-full);
-  min-height: 40px;
-  padding: 8px 20px;
-  font-size: 14px;
-  white-space: nowrap;
-}
-
-.action-buttons .download-split .btn-primary {
-  padding: 8px 20px;
+  flex-shrink: 0;
 }
 
 .action-dismiss {
@@ -689,6 +713,7 @@ a.btn-ghost {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .action-dismiss:hover {
@@ -699,36 +724,55 @@ a.btn-ghost {
 .download-split {
   display: inline-flex;
   align-items: stretch;
+  gap: 0;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  background: var(--accent);
+  flex-shrink: 0;
 }
 
-.download-split.has-size-toggle #download-btn {
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
-  padding-right: 16px;
+.download-split #download-btn,
+.download-split .download-chevron-btn {
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  min-height: 40px;
+  box-shadow: none;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  background: var(--accent);
+  color: var(--on-accent);
 }
 
 .download-split #download-btn {
-  border-radius: var(--radius-full);
+  padding: 8px 14px;
 }
 
-.download-split .btn-primary {
-  min-height: 40px;
-  font-size: 14px;
-  white-space: nowrap;
+.download-split.has-size-toggle #download-btn {
+  padding-right: 10px;
 }
 
-.download-chevron-btn {
-  min-width: 36px;
+.download-split .download-chevron-btn {
+  min-width: 34px;
   padding: 8px 10px;
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
-  border-left: 1px solid rgba(240, 239, 236, 0.2);
-  border-radius: 0 var(--radius-full) var(--radius-full) 0;
-  min-height: 40px;
+  border-left: 1px solid color-mix(in srgb, var(--on-accent) 22%, transparent);
 }
 
-.download-chevron-btn.hidden {
+.download-split .download-chevron-btn.hidden {
   display: none;
+}
+
+.download-split #download-btn:hover,
+.download-split .download-chevron-btn:hover {
+  filter: brightness(1.06);
+}
+
+.download-split #download-btn:disabled,
+.download-split .download-chevron-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  filter: none;
 }
 
 /* ── Lightbox ── */
@@ -1023,6 +1067,39 @@ a.btn-ghost {
     width: 100%;
     padding-left: var(--container-margin);
     padding-right: var(--container-margin);
+  }
+
+  .header h1 { font-size: 20px; }
+
+  .header-actions {
+    max-width: none;
+    gap: 4px;
+  }
+
+  .header-actions .btn-ghost {
+    padding: 8px 12px;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+  }
+
+  .action-bar {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    width: auto;
+    max-width: min(560px, calc(100% - 32px));
+    gap: 12px;
+    padding: 6px 6px 6px 16px;
+  }
+
+  #selected-count { font-size: 15px; }
+  #selected-size { font-size: 12px; }
+
+  .download-split #download-btn { padding: 8px 18px; }
+  .download-split.has-size-toggle #download-btn { padding-right: 12px; }
+  .download-split .download-chevron-btn {
+    min-width: 36px;
+    padding: 8px 12px;
   }
 }
 
