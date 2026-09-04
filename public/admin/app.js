@@ -1297,7 +1297,12 @@ document.getElementById('new-customer-form').onsubmit = async (e) => {
   panel.innerHTML = `<p>Δημιουργήθηκε: <strong>${escapeHtml(r.customer.name)}</strong></p>
     <p class="code-reveal mono">${escapeHtml(r.accessCode)}</p>
     <button class="btn btn-secondary" onclick="navigator.clipboard.writeText('${escapeHtml(r.accessCode)}')">Αντιγραφή</button>
-    ${r.sendResult ? `<p>Αποστολή: ${r.sendResult.ok ? r.sendResult.channel : 'απέτυχε'}</p>` : ''}`;
+    ${r.sendResult ? `<p>Αποστολή: ${r.sendResult.ok
+      ? `ok μέσω <strong>${escapeHtml(r.sendResult.channel)}</strong>`
+      : '<strong>απέτυχε</strong>'}</p>` : ''}
+    ${r.sendResult?.emailFailed
+      ? `<p class="notice-text" style="color:var(--error)">Email απέτυχε: ${escapeHtml(r.sendResult.emailError || 'άγνωστο σφάλμα')}</p>`
+      : ''}`;
   e.target.reset();
   loadCustomers();
 };

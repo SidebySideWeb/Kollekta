@@ -82,15 +82,15 @@
               <option value="order_only">Πρόσβαση: Μόνο παραγγελία</option>
             </select>
             <select name="preferredChannel">
+              <option value="email">Κανάλι: Email (χωρίς fallback σε Viber)</option>
               <option value="auto">Κανάλι: Αυτόματο (Email → Viber → WhatsApp → SMS)</option>
-              <option value="email">Email</option>
               <option value="viber">Viber</option>
               <option value="whatsapp">WhatsApp</option>
               <option value="sms">SMS</option>
             </select>
             <label class="checkbox-label"><input type="checkbox" name="sendCode" checked> Αποστολή κωδικού</label>
           </div>
-          <p class="hint">Χωρίς email, ο κωδικός θα περάσει σε πληρωμένο κανάλι.</p>
+          <p class="hint">Με email και κανάλι «Email», ο κωδικός στέλνεται μόνο με email. Το Αυτόματο πέφτει σε Viber αν αποτύχει το email.</p>
           <button type="submit" class="btn btn-primary">Δημιουργία</button>
         </form>
         <label class="checkbox-label import-option"><input type="checkbox" id="import-send-codes"> Αποστολή κωδικών κατά την εισαγωγή</label>
