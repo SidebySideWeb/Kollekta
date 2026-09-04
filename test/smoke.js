@@ -124,6 +124,21 @@ async function main() {
     `);
 
     await adminLogin();
+
+    const logoutRes = await adminFetch(`${BASE}/api/logout`, { method: 'POST' });
+    fail(logoutRes.ok, 'admin logout clears session');
+    adminCookie = '';
+    const blocked = await fetch(`${BASE}/api/admin/collections`);
+    fail(blocked.status === 401, 'admin collections require auth after logout');
+    await adminLogin();
+
+    const changeBad = await adminFetch(`${BASE}/api/admin/change-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ currentPassword: 'wrong', newPassword: 'newpass123' }),
+    });
+    fail(changeBad.status === 400, 'admin change-password rejects wrong current password');
+
     const images = await createImages(tmp);
 
     // Collection A - no mapping, no orders

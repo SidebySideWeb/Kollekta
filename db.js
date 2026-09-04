@@ -153,6 +153,11 @@ db.exec(`
   );
 
   CREATE INDEX IF NOT EXISTS idx_collcust ON collection_customers(customer_id);
+
+  CREATE TABLE IF NOT EXISTS app_settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+  );
 `);
 
 module.exports = db;

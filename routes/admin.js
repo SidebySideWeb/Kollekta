@@ -23,6 +23,7 @@ const {
   getRecentSnapshots,
 } = require('../lib/storage');
 const { findPurgeCandidates, purgeCollection } = require('../lib/retention');
+const { changeAdminPassword } = require('../lib/adminAuth');
 const {
   imageMappingSampleBuffer,
   imageMappingExportBuffer,
@@ -936,6 +937,16 @@ router.patch('/collections/:id/retention', (req, res) => {
     ...updated,
     storage: getCollectionStorage(collectionId),
   });
+});
+
+router.post('/change-password', (req, res) => {
+  const currentPassword = String(req.body.currentPassword || '');
+  const newPassword = String(req.body.newPassword || '');
+  const result = changeAdminPassword(currentPassword, newPassword);
+  if (!result.ok) {
+    return res.status(400).json({ error: result.error });
+  }
+  res.json({ ok: true, message: 'Ο κωδικός ενημερώθηκε.' });
 });
 
 module.exports = router;

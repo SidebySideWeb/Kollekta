@@ -1290,6 +1290,49 @@ applyBranding();
 loadCollections();
 loadCustomers();
 
+document.getElementById('logout-btn')?.addEventListener('click', async () => {
+  await fetch('/api/logout', { method: 'POST', credentials: 'include' });
+  location.href = '/admin/login.html';
+});
+
+function openPasswordModal() {
+  document.getElementById('change-password-error')?.classList.add('hidden');
+  document.getElementById('change-password-form')?.reset();
+  document.getElementById('password-modal')?.classList.remove('hidden');
+}
+
+function closePasswordModal() {
+  document.getElementById('password-modal')?.classList.add('hidden');
+}
+
+document.getElementById('change-password-btn')?.addEventListener('click', openPasswordModal);
+document.getElementById('password-modal-cancel')?.addEventListener('click', closePasswordModal);
+document.getElementById('password-modal-backdrop')?.addEventListener('click', closePasswordModal);
+document.getElementById('change-password-form')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const err = document.getElementById('change-password-error');
+  const currentPassword = document.getElementById('current-password').value;
+  const newPassword = document.getElementById('new-password').value;
+  const confirmPassword = document.getElementById('confirm-password').value;
+  if (newPassword !== confirmPassword) {
+    err.textContent = 'Οι νέοι κωδικοί δεν ταιριάζουν.';
+    err.classList.remove('hidden');
+    return;
+  }
+  try {
+    await api('/change-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+    closePasswordModal();
+    showToast('Ο κωδικός διαχειριστή ενημερώθηκε.', 'success', 'Κωδικός');
+  } catch (error) {
+    err.textContent = error.message || 'Αποτυχία αλλαγής κωδικού.';
+    err.classList.remove('hidden');
+  }
+});
+
 document.getElementById('toast-close')?.addEventListener('click', hideToast);
 document.getElementById('toast-backdrop')?.addEventListener('click', hideToast);
 

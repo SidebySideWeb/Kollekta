@@ -11,16 +11,50 @@
 </head>
 <body>
   <div class="login-page">
-    <form id="login-form" class="login-card">
+    <div class="login-card">
       <h1 id="login-title">Kollekta</h1>
-      <p class="subtitle">Σύνδεση διαχειριστή</p>
-      <label for="password">Κωδικός πρόσβασης</label>
-      <input type="password" id="password" placeholder="Κωδικός" required>
-      <p id="login-error" class="status-line error hidden"></p>
-      <button type="submit" class="btn btn-primary login-submit">Σύνδεση</button>
-    </form>
+      <p class="subtitle" id="login-subtitle">Σύνδεση διαχειριστή</p>
+
+      <form id="login-form">
+        <label for="password">Κωδικός πρόσβασης</label>
+        <input type="password" id="password" placeholder="Κωδικός" required autocomplete="current-password">
+        <p id="login-error" class="status-line error hidden"></p>
+        <button type="submit" class="btn btn-primary login-submit">Σύνδεση</button>
+        <button type="button" class="link-btn" id="forgot-btn">Ξέχασα τον κωδικό μου</button>
+      </form>
+
+      <div id="forgot-form" class="hidden">
+        <p class="reset-intro">Θα σταλεί κωδικός επαναφοράς στο email του διαχειριστή.</p>
+        <p id="forgot-msg" class="status-line hidden"></p>
+        <button type="button" class="btn btn-primary login-submit" id="forgot-send-btn">Αποστολή κωδικού</button>
+        <button type="button" class="btn btn-secondary login-submit" id="forgot-have-code-btn">Έχω κωδικό</button>
+        <button type="button" class="link-btn" id="back-login-btn">← Επιστροφή στη σύνδεση</button>
+      </div>
+
+      <form id="reset-form" class="hidden">
+        <label for="reset-code">Κωδικός επαναφοράς</label>
+        <input type="text" id="reset-code" class="code-input" placeholder="Κωδικός από email" required autocomplete="one-time-code">
+        <label for="reset-new-password">Νέος κωδικός</label>
+        <input type="password" id="reset-new-password" required minlength="8" autocomplete="new-password">
+        <label for="reset-confirm-password">Επιβεβαίωση</label>
+        <input type="password" id="reset-confirm-password" required minlength="8" autocomplete="new-password">
+        <p id="reset-error" class="status-line error hidden"></p>
+        <button type="submit" class="btn btn-primary login-submit">Ορισμός νέου κωδικού</button>
+        <button type="button" class="link-btn" id="back-forgot-btn">← Πίσω</button>
+      </form>
+    </div>
   </div>
   <script>
+    let resetAvailable = false;
+
+    function showPanel(name) {
+      document.getElementById('login-form').classList.toggle('hidden', name !== 'login');
+      document.getElementById('forgot-form').classList.toggle('hidden', name !== 'forgot');
+      document.getElementById('reset-form').classList.toggle('hidden', name !== 'reset');
+      document.getElementById('login-subtitle').textContent =
+        name === 'login' ? 'Σύνδεση διαχειριστή' : name === 'forgot' ? 'Επαναφορά κωδικού' : 'Νέος κωδικός';
+    }
+
     fetch('/api/branding').then(r => r.json()).then(b => {
       document.documentElement.style.setProperty('--accent', b.accentColor || '#8b7bf0');
       if (b.storageWarnPercent) {
@@ -31,9 +65,14 @@
       }
       document.getElementById('login-title').textContent = b.companyName || 'Kollekta';
       document.title = (b.companyName || 'Kollekta') + ' — Σύνδεση';
+      resetAvailable = Boolean(b.adminResetAvailable);
+      document.getElementById('forgot-btn').classList.toggle('hidden', !resetAvailable);
     });
+
     document.getElementById('login-form').addEventListener('submit', async (e) => {
       e.preventDefault();
+      const err = document.getElementById('login-error');
+      err.classList.add('hidden');
       const res = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -41,11 +80,65 @@
         body: JSON.stringify({ password: document.getElementById('password').value }),
       });
       if (!res.ok) {
-        document.getElementById('login-error').textContent = 'Λάθος κωδικός.';
-        document.getElementById('login-error').classList.remove('hidden');
+        err.textContent = 'Λάθος κωδικός.';
+        err.classList.remove('hidden');
         return;
       }
       location.href = '/admin/';
+    });
+
+    document.getElementById('forgot-btn').addEventListener('click', () => {
+      document.getElementById('forgot-msg').classList.add('hidden');
+      showPanel('forgot');
+    });
+    document.getElementById('back-login-btn').addEventListener('click', () => showPanel('login'));
+    document.getElementById('back-forgot-btn').addEventListener('click', () => showPanel('forgot'));
+    document.getElementById('forgot-have-code-btn').addEventListener('click', () => {
+      document.getElementById('reset-error').classList.add('hidden');
+      showPanel('reset');
+    });
+
+    document.getElementById('forgot-send-btn').addEventListener('click', async () => {
+      const msg = document.getElementById('forgot-msg');
+      msg.className = 'status-line';
+      msg.textContent = 'Αποστολή...';
+      msg.classList.remove('hidden');
+      const res = await fetch('/api/admin-auth/forgot', { method: 'POST', credentials: 'include' });
+      const data = await res.json().catch(() => ({}));
+      msg.textContent = data.message || data.error || 'Ολοκληρώθηκε.';
+      msg.className = res.ok ? 'status-line success' : 'status-line error';
+      if (res.ok) showPanel('reset');
+    });
+
+    document.getElementById('reset-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const err = document.getElementById('reset-error');
+      err.classList.add('hidden');
+      const newPassword = document.getElementById('reset-new-password').value;
+      const confirm = document.getElementById('reset-confirm-password').value;
+      if (newPassword !== confirm) {
+        err.textContent = 'Οι κωδικοί δεν ταιριάζουν.';
+        err.classList.remove('hidden');
+        return;
+      }
+      const res = await fetch('/api/admin-auth/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          code: document.getElementById('reset-code').value,
+          newPassword,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        err.textContent = data.error || 'Αποτυχία επαναφοράς.';
+        err.classList.remove('hidden');
+        return;
+      }
+      alert(data.message || 'Ο κωδικός ενημερώθηκε.');
+      showPanel('login');
+      document.getElementById('password').value = '';
     });
   </script>
 </body>

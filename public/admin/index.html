@@ -23,6 +23,10 @@
             <button type="button" class="nav-btn" data-view="storage">Χώρος</button>
           </nav>
         </div>
+        <div class="topbar-actions">
+          <button type="button" id="change-password-btn" class="btn btn-secondary">Κωδικός</button>
+          <button type="button" id="logout-btn" class="btn btn-secondary">Αποσύνδεση</button>
+        </div>
       </div>
     </header>
 
@@ -209,6 +213,26 @@
         <p id="upload-overlay-progress-label" class="upload-progress-label"></p>
       </div>
       <ul id="upload-overlay-failures" class="upload-failures hidden" aria-live="polite"></ul>
+    </div>
+  </div>
+
+  <div id="password-modal" class="password-modal hidden" role="dialog" aria-modal="true" aria-labelledby="password-modal-title">
+    <div class="password-modal-backdrop" id="password-modal-backdrop"></div>
+    <div class="password-modal-card">
+      <h3 id="password-modal-title">Αλλαγή κωδικού</h3>
+      <form id="change-password-form" class="password-form">
+        <label for="current-password">Τρέχων κωδικός</label>
+        <input type="password" id="current-password" required autocomplete="current-password">
+        <label for="new-password">Νέος κωδικός</label>
+        <input type="password" id="new-password" required minlength="8" autocomplete="new-password">
+        <label for="confirm-password">Επιβεβαίωση νέου κωδικού</label>
+        <input type="password" id="confirm-password" required minlength="8" autocomplete="new-password">
+        <p id="change-password-error" class="notice-slot notice-banner notice-error hidden" role="alert"></p>
+        <div class="password-form-actions">
+          <button type="button" class="btn btn-secondary" id="password-modal-cancel">Ακύρωση</button>
+          <button type="submit" class="btn btn-primary">Αποθήκευση</button>
+        </div>
+      </form>
     </div>
   </div>
 
