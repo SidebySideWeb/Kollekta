@@ -15,6 +15,8 @@ const SMTP_PORT = process.env.SMTP_PORT || '';
 const SMTP_USER = process.env.SMTP_USER || '';
 const SMTP_PASS = process.env.SMTP_PASS || '';
 const SMTP_FROM = process.env.SMTP_FROM || '';
+const EMAIL_LOCAL_PART = process.env.EMAIL_LOCAL_PART || 'noreply';
+const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const MESSAGING_PROVIDER = process.env.MESSAGING_PROVIDER || 'console';
 const MESSAGING_SENDER_ID = process.env.MESSAGING_SENDER_ID || '';
 const YUBOTO_API_TOKEN = process.env.YUBOTO_API_TOKEN || '';
@@ -38,12 +40,48 @@ function fail(message) {
   process.exit(1);
 }
 
+function publicHostname() {
+  try {
+    return new URL(APP_PUBLIC_URL).hostname || '';
+  } catch {
+    return '';
+  }
+}
+
+function quoteFromDisplayName(name) {
+  const clean = String(name || '').trim().replace(/[\r\n"]/g, '');
+  const display = clean || PRODUCT_NAME;
+  if (/[,<>@()]/.test(display) || /\s/.test(display)) {
+    return `"${display}"`;
+  }
+  return display;
+}
+
+/** e.g. "Moutaki" <noreply@moutaki.kollekta.gr> from COMPANY_NAME + APP_PUBLIC_URL */
+function buildDefaultEmailFrom() {
+  const host = publicHostname();
+  if (!host || host === 'localhost' || host.endsWith('.local')) return '';
+  const local = String(EMAIL_LOCAL_PART || 'noreply').replace(/[^a-zA-Z0-9._+-]/g, '') || 'noreply';
+  return `${quoteFromDisplayName(COMPANY_NAME)} <${local}@${host}>`;
+}
+
+const EMAIL_FROM = process.env.EMAIL_FROM || process.env.SMTP_FROM || buildDefaultEmailFrom();
+
 if (!ADMIN_PASSWORD) fail('ADMIN_PASSWORD είναι υποχρεωτικό.');
 if (!SESSION_COOKIE_SECRET) fail('SESSION_COOKIE_SECRET είναι υποχρεωτικό.');
 
 if (EMAIL_PROVIDER === 'smtp') {
-  if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS || !SMTP_FROM) {
-    fail('Για EMAIL_PROVIDER=smtp απαιτούνται SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM.');
+  if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS || !EMAIL_FROM) {
+    fail('Για EMAIL_PROVIDER=smtp απαιτούνται SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS και EMAIL_FROM (ή COMPANY_NAME + APP_PUBLIC_URL).');
+  }
+}
+
+if (EMAIL_PROVIDER === 'resend') {
+  if (!RESEND_API_KEY) {
+    fail('Για EMAIL_PROVIDER=resend απαιτείται RESEND_API_KEY.');
+  }
+  if (!EMAIL_FROM) {
+    fail('Για EMAIL_PROVIDER=resend βάλε APP_PUBLIC_URL=https://client.kollekta.gr και COMPANY_NAME, ή EMAIL_FROM χειροκίνητα.');
   }
 }
 
@@ -89,6 +127,9 @@ module.exports = {
   SMTP_USER,
   SMTP_PASS,
   SMTP_FROM,
+  EMAIL_FROM,
+  EMAIL_LOCAL_PART,
+  RESEND_API_KEY,
   MESSAGING_PROVIDER,
   MESSAGING_SENDER_ID,
   YUBOTO_API_TOKEN,
