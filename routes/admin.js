@@ -24,6 +24,7 @@ const {
 } = require('../lib/storage');
 const { findPurgeCandidates, purgeCollection } = require('../lib/retention');
 const { changeAdminPassword, listAdmins, createAdmin, deleteAdmin } = require('../lib/adminAuth');
+const { getQuotaStatus, checkUploadAllowed } = require('../lib/quota');
 const {
   imageMappingSampleBuffer,
   imageMappingExportBuffer,
@@ -104,6 +105,17 @@ function handleImageUpload(req, res, next) {
   });
 }
 
+function enforceQuotaBeforeUpload(req, res, next) {
+  const contentLength = Number(req.headers['content-length'] || 0);
+  if (contentLength > 0) {
+    const check = checkUploadAllowed(contentLength);
+    if (!check.allowed) {
+      return res.status(507).json({ error: check.reason });
+    }
+  }
+  return next();
+}
+
 function collectionHasOrders(collectionId) {
   return (
     db.prepare('SELECT COUNT(*) AS count FROM order_items WHERE collection_id = ?').get(collectionId)
@@ -153,7 +165,7 @@ router.get('/collections/:id', (req, res) => {
   });
 });
 
-router.post('/collections/:id/images', handleImageUpload, async (req, res) => {
+router.post('/collections/:id/images', enforceQuotaBeforeUpload, handleImageUpload, async (req, res) => {
   const collectionId = Number(req.params.id);
   const collection = db.prepare('SELECT id FROM collections WHERE id = ?').get(collectionId);
   const files = req.files || [];
@@ -171,8 +183,15 @@ router.post('/collections/:id/images', handleImageUpload, async (req, res) => {
     });
   }
 
+  const batchQuota = checkUploadAllowed(batchBytes);
+  if (!batchQuota.allowed) {
+    deleteTempFiles(files);
+    return res.status(507).json({ error: batchQuota.reason });
+  }
+
   const results = [];
   let uploaded = 0;
+  let reservedEstimate = 0;
 
   const insertImage = db.prepare(
     `INSERT INTO images
@@ -182,6 +201,19 @@ router.post('/collections/:id/images', handleImageUpload, async (req, res) => {
   );
 
   const perFile = await mapPool(files, IMAGE_PROCESS_CONCURRENCY, async (file) => {
+    const fileSize = file.size || 0;
+    const reserveCheck = checkUploadAllowed(fileSize, { alreadyReserved: reservedEstimate });
+    if (!reserveCheck.allowed) {
+      deleteTempFile(file.path);
+      return {
+        filename: file.originalname,
+        ok: false,
+        error: reserveCheck.reason,
+        quotaExceeded: true,
+      };
+    }
+    reservedEstimate += reserveCheck.estimatedCost || Math.ceil(fileSize * 1.12);
+
     try {
       const paths = await processImageFast(file.path, collectionId, file.originalname, {
         mimeType: file.mimetype,
@@ -218,7 +250,17 @@ router.post('/collections/:id/images', handleImageUpload, async (req, res) => {
     if (item.ok) uploaded += 1;
   }
 
-  res.json({ uploaded, results });
+  const quotaBlocked = results.some((item) => item.quotaExceeded);
+  if (uploaded === 0 && quotaBlocked) {
+    return res.status(507).json({
+      error: results.find((item) => item.quotaExceeded)?.error || 'Δεν υπάρχει αρκετός χώρος.',
+      uploaded: 0,
+      results,
+      quota: getQuotaStatus(),
+    });
+  }
+
+  res.json({ uploaded, results, quota: getQuotaStatus() });
 });
 
 router.get('/collections/:id/images/:imageId/:variant', (req, res) => {
@@ -892,7 +934,12 @@ router.get('/storage', (_req, res) => {
   const total = getTotalStorage();
   const disk = getDiskUsage();
   const snapshots = getRecentSnapshots(30);
-  res.json({ total, disk, snapshots });
+  const quota = getQuotaStatus();
+  res.json({ total, disk, snapshots, quota });
+});
+
+router.get('/quota', (_req, res) => {
+  res.json(getQuotaStatus());
 });
 
 router.get('/storage/candidates', (_req, res) => {

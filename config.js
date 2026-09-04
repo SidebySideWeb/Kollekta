@@ -34,6 +34,10 @@ const RATE_LIMIT_LOGIN_WINDOW_MINUTES = Number(process.env.RATE_LIMIT_LOGIN_WIND
 const RATE_LIMIT_LOGIN_MAX_PER_IP = Number(process.env.RATE_LIMIT_LOGIN_MAX_PER_IP) || 60;
 const RATE_LIMIT_RESET_MAX_PER_PHONE = Number(process.env.RATE_LIMIT_RESET_MAX_PER_PHONE) || 10;
 const RATE_LIMIT_RESET_MAX_PER_IP = Number(process.env.RATE_LIMIT_RESET_MAX_PER_IP) || 30;
+const QUOTA_GB = process.env.QUOTA_GB !== undefined && process.env.QUOTA_GB !== ''
+  ? Number(process.env.QUOTA_GB)
+  : 20;
+const QUOTA_WARN_PERCENT = Number(process.env.QUOTA_WARN_PERCENT) || 80;
 
 function fail(message) {
   console.error(`Σφάλμα ρύθμισης: ${message}`);
@@ -179,5 +183,7 @@ module.exports = {
   RATE_LIMIT_LOGIN_MAX_PER_IP,
   RATE_LIMIT_RESET_MAX_PER_PHONE,
   RATE_LIMIT_RESET_MAX_PER_IP,
+  QUOTA_GB,
+  QUOTA_WARN_PERCENT,
   publicBranding,
 };

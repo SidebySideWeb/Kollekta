@@ -145,12 +145,72 @@ function renderStorageChart(snapshots) {
   </svg>`;
 }
 
-function storageProgressClass(usedPct) {
-  const warn = Number(getComputedStyle(document.documentElement).getPropertyValue('--storage-warn-percent')) || 75;
-  const critical = Number(getComputedStyle(document.documentElement).getPropertyValue('--storage-critical-percent')) || 90;
-  if (usedPct >= critical) return 'critical';
-  if (usedPct >= warn) return 'warn';
+function storageProgressClass(usedPct, warnPercent = 80, fullAt = 100) {
+  if (usedPct >= fullAt) return 'critical';
+  if (usedPct >= warnPercent) return 'warn';
   return '';
+}
+
+function quotaProgressClass(quota) {
+  if (!quota || quota.quotaBytes == null) return '';
+  if (quota.state === 'full') return 'critical';
+  if (quota.state === 'warning') return 'warn';
+  return '';
+}
+
+async function fetchQuotaStatus() {
+  try {
+    return await api('/quota');
+  } catch {
+    return null;
+  }
+}
+
+function applyQuotaBanner(quota) {
+  const el = document.getElementById('quota-banner');
+  if (!el) return;
+  if (!quota || !quota.quotaBytes || quota.state === 'ok') {
+    el.className = 'quota-banner hidden';
+    el.textContent = '';
+    return;
+  }
+  const pct = Math.round(quota.percentUsed || 0);
+  if (quota.state === 'full') {
+    el.className = 'quota-banner full';
+    el.textContent = `Ο χώρος σου εξαντλήθηκε — ${pct}% σε χρήση. Νέα ανεβάσματα είναι μπλοκαρισμένα. Αρχειοθέτησε παλιές συλλογές ή αναβάθμισε το πακέτο σου.`;
+    return;
+  }
+  el.className = 'quota-banner warning';
+  el.textContent = `Ο χώρος σου εξαντλείται — ${pct}% σε χρήση. Αρχειοθέτησε παλιές συλλογές ή αναβάθμισε το πακέτο σου.`;
+}
+
+async function refreshQuotaBanner() {
+  const quota = await fetchQuotaStatus();
+  applyQuotaBanner(quota);
+  return quota;
+}
+
+function renderQuotaRemainingLine(quota) {
+  if (!quota || quota.quotaBytes == null) {
+    return '<p class="quota-remaining hidden" id="quota-remaining-line"></p>';
+  }
+  const remaining = fmtBytes(Math.max(0, quota.remainingBytes || 0));
+  const fullClass = quota.state === 'full' ? ' full' : '';
+  return `<p class="quota-remaining${fullClass}" id="quota-remaining-line">Διαθέσιμος χώρος: ${remaining}</p>`;
+}
+
+async function updateQuotaRemainingLine() {
+  const line = document.getElementById('quota-remaining-line');
+  if (!line) return;
+  const quota = await fetchQuotaStatus();
+  applyQuotaBanner(quota);
+  if (!quota || quota.quotaBytes == null) {
+    line.classList.add('hidden');
+    return;
+  }
+  line.classList.remove('hidden');
+  line.classList.toggle('full', quota.state === 'full');
+  line.textContent = `Διαθέσιμος χώρος: ${fmtBytes(Math.max(0, quota.remainingBytes || 0))}`;
 }
 
 async function api(path, options = {}) {
@@ -687,6 +747,7 @@ function renderWizard(collection, audience = { visibility: 'all', selectedTags: 
           pickLabel: 'Επιλογή εικόνων',
           multiple: true,
         })}
+        ${renderQuotaRemainingLine(null)}
         <div class="notice-slot hidden" id="status-images" role="status"></div>
         ${renderAdminImageSummary(collection.images, collection.id)}
       </div>
@@ -790,6 +851,7 @@ function renderWizard(collection, audience = { visibility: 'all', selectedTags: 
   bindFilePickerLabel('images-input');
   bindFilePickerLabel('mapping-input');
   bindFilePickerLabel('orders-input');
+  updateQuotaRemainingLine();
 }
 
 async function saveVisibility() {
@@ -825,6 +887,20 @@ async function uploadImages() {
   const files = [...input.files];
   const total = files.length;
   const totalBytes = sumFileBytes(files);
+
+  const quota = await fetchQuotaStatus();
+  applyQuotaBanner(quota);
+  if (quota && quota.quotaBytes != null) {
+    const estimated = Math.ceil(totalBytes * 1.12);
+    if (quota.state === 'full' || estimated > (quota.remainingBytes || 0)) {
+      const msg = quota.state === 'full'
+        ? `Δεν υπάρχει αρκετός χώρος. Χρησιμοποιούνται ${fmtBytes(quota.usedBytes)} από ${fmtBytes(quota.quotaBytes)} διαθέσιμα. Αρχειοθέτησε παλιές συλλογές για να ελευθερώσεις χώρο.`
+        : `Δεν υπάρχει αρκετός χώρος για αυτό το ανέβασμα (${fmtBytes(totalBytes)}). Διαθέσιμα: ${fmtBytes(quota.remainingBytes || 0)} από ${fmtBytes(quota.quotaBytes)}.`;
+      setStatus('status-images', msg, 'error');
+      showToast(msg, 'error', 'Όριο χώρου');
+      return;
+    }
+  }
 
   if (totalBytes > IMAGE_LARGE_UPLOAD_BYTES) {
     const estMinutes = Math.max(1, Math.ceil(totalBytes / IMAGE_UPLOAD_PROBE_BPS / 60));
@@ -893,9 +969,11 @@ async function uploadImages() {
     }
 
     showToast(summary, summaryType, 'Ανέβασμα ολοκληρώθηκε');
+    await updateQuotaRemainingLine();
   } catch (err) {
     setStatus('status-images', err.message || 'Αποτυχία ανεβάσματος.', 'error');
     showToast(err.message || 'Αποτυχία ανεβάσματος.', 'error', 'Σφάλμα ανεβάσματος');
+    await updateQuotaRemainingLine();
   } finally {
     setUploadLoading(false, 'Ανέβασμα εικόνων...', { blockNavigation: true });
   }
@@ -1194,9 +1272,35 @@ document.getElementById('new-admin-form')?.addEventListener('submit', async (e) 
 
 async function loadStorage() {
   const [storage, candidates] = await Promise.all([api('/storage'), api('/storage/candidates')]);
-  const usedPct = storage.disk.usedPercent || 0;
-  const progressClass = storageProgressClass(usedPct);
-  document.getElementById('storage-summary').innerHTML = `
+  const quota = storage.quota || null;
+  applyQuotaBanner(quota);
+
+  if (quota && quota.quotaBytes != null) {
+    const usedPct = quota.percentUsed || 0;
+    const progressClass = quotaProgressClass(quota);
+    document.getElementById('storage-summary').innerHTML = `
+    <div class="storage-overview-top">
+      <div>
+        <p class="storage-label">Χρήση πακέτου</p>
+        <div class="storage-used">${fmtBytes(quota.usedBytes)}</div>
+        <span class="subtitle">από ${fmtBytes(quota.quotaBytes)}</span>
+      </div>
+      <div class="storage-free">
+        <div><strong>${fmtBytes(Math.max(0, quota.remainingBytes || 0))}</strong> διαθέσιμα</div>
+        <div class="subtitle">${usedPct.toFixed(1)}% του ορίου</div>
+      </div>
+    </div>
+    <div class="storage-progress" role="progressbar" aria-valuenow="${usedPct.toFixed(1)}" aria-valuemin="0" aria-valuemax="100">
+      <div class="storage-progress-fill ${progressClass}" style="width:${Math.min(usedPct, 100)}%"></div>
+    </div>
+    <div class="storage-chart-section">
+      <p class="storage-label">Τάση 30 ημερών</p>
+      ${renderStorageChart(storage.snapshots)}
+    </div>`;
+  } else {
+    const usedPct = storage.disk.usedPercent || 0;
+    const progressClass = storageProgressClass(usedPct);
+    document.getElementById('storage-summary').innerHTML = `
     <div class="storage-overview-top">
       <div>
         <p class="storage-label">Συνολικός χώρος</p>
@@ -1215,6 +1319,7 @@ async function loadStorage() {
       <p class="storage-label">Τάση 30 ημερών</p>
       ${renderStorageChart(storage.snapshots)}
     </div>`;
+  }
 
   const candidatesEl = document.getElementById('storage-candidates');
   if (candidates.candidates.length) {
@@ -1389,6 +1494,7 @@ document.getElementById('bulk-tags-apply-btn')?.addEventListener('click', async 
 
 applyBranding();
 loadCurrentAdmin().then(() => applyAdminNavPermissions());
+refreshQuotaBanner();
 loadCollections();
 loadCustomers();
 

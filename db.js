@@ -128,6 +128,7 @@ ensureColumn('collections', 'full_purged_at', 'TEXT');
 ensureColumn('images', 'full_bytes', 'INTEGER DEFAULT 0');
 ensureColumn('images', 'web_bytes', 'INTEGER DEFAULT 0');
 ensureColumn('images', 'thumb_bytes', 'INTEGER DEFAULT 0');
+ensureColumn('images', 'grid_bytes', 'INTEGER DEFAULT 0');
 ensureColumn('images', 'full_purged', 'INTEGER DEFAULT 0');
 
 ensureColumn('customers', 'tags', 'TEXT');

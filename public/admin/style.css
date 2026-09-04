@@ -1323,6 +1323,36 @@ td .btn {
 .storage-progress-fill.warn { background: var(--warning); }
 .storage-progress-fill.critical { background: var(--danger); }
 
+.quota-banner {
+  padding: 10px 16px;
+  font-size: 13px;
+  line-height: 1.4;
+  text-align: center;
+  border-bottom: 1px solid transparent;
+}
+
+.quota-banner.warning {
+  background: rgba(212, 160, 23, 0.18);
+  color: #e8c56a;
+  border-bottom-color: rgba(212, 160, 23, 0.35);
+}
+
+.quota-banner.full {
+  background: rgba(220, 80, 80, 0.18);
+  color: #f0a0a0;
+  border-bottom-color: rgba(220, 80, 80, 0.4);
+}
+
+.quota-remaining {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--on-surface-variant);
+}
+
+.quota-remaining.full {
+  color: var(--danger, var(--error));
+}
+
 .storage-chart-section {
   padding-top: var(--gutter);
   border-top: 1px solid var(--outline-variant);
