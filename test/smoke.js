@@ -6,6 +6,7 @@ const XLSX = require('xlsx');
 
 const BASE = process.env.SMOKE_BASE_URL || 'http://localhost:3000';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'test123';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@localhost';
 let adminCookie = '';
 let sessionCookie = '';
 
@@ -15,12 +16,20 @@ function assert(cond, msg) {
   return false;
 }
 
-async function adminLogin() {
-  const res = await fetch(`${BASE}/api/login`, {
+async function adminLogin(email = ADMIN_EMAIL, password = ADMIN_PASSWORD) {
+  let res = await fetch(`${BASE}/api/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ password: ADMIN_PASSWORD }),
+    body: JSON.stringify({ email, password }),
   });
+  // Backward-compatible: single-admin installs can still auth with password only
+  if (!res.ok) {
+    res = await fetch(`${BASE}/api/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password }),
+    });
+  }
   if (!res.ok) throw new Error('Admin login failed');
   const cookies = res.headers.getSetCookie
     ? res.headers.getSetCookie()
@@ -138,6 +147,37 @@ async function main() {
       body: JSON.stringify({ currentPassword: 'wrong', newPassword: 'newpass123' }),
     });
     fail(changeBad.status === 400, 'admin change-password rejects wrong current password');
+
+    const adminsList = await adminFetch(`${BASE}/api/admin/admins`).then((r) => r.json());
+    fail(Array.isArray(adminsList.data) && adminsList.data.length >= 1, 'admin list returns at least one admin');
+
+    const secondAdminEmail = `second-admin-${Date.now()}@example.com`;
+    const createdAdmin = await adminFetch(`${BASE}/api/admin/admins`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: secondAdminEmail,
+        name: 'Second Admin',
+        password: 'secondpass123',
+      }),
+    });
+    fail(createdAdmin.status === 201, 'can create a second admin');
+    const createdAdminBody = await createdAdmin.json();
+    fail(createdAdminBody.email === secondAdminEmail, 'created admin returns email');
+
+    await adminFetch(`${BASE}/api/logout`, { method: 'POST' });
+    adminCookie = '';
+    await adminLogin(secondAdminEmail, 'secondpass123');
+    fail(Boolean(adminCookie), 'second admin can log in');
+
+    const deleteSelf = await adminFetch(`${BASE}/api/admin/admins/${createdAdminBody.id}`, { method: 'DELETE' });
+    fail(deleteSelf.status === 400, 'admin cannot delete own account');
+
+    await adminFetch(`${BASE}/api/logout`, { method: 'POST' });
+    adminCookie = '';
+    await adminLogin();
+    const deleted = await adminFetch(`${BASE}/api/admin/admins/${createdAdminBody.id}`, { method: 'DELETE' });
+    fail(deleted.ok, 'primary admin can delete second admin');
 
     const images = await createImages(tmp);
 

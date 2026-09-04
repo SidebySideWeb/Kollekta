@@ -16,6 +16,8 @@
       <p class="subtitle" id="login-subtitle">Σύνδεση διαχειριστή</p>
 
       <form id="login-form">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="name@company.com" required autocomplete="username">
         <label for="password">Κωδικός πρόσβασης</label>
         <input type="password" id="password" placeholder="Κωδικός" required autocomplete="current-password">
         <p id="login-error" class="status-line error hidden"></p>
@@ -25,6 +27,8 @@
 
       <div id="forgot-form" class="hidden">
         <p class="reset-intro">Θα σταλεί κωδικός επαναφοράς στο email του διαχειριστή.</p>
+        <label for="forgot-email">Email</label>
+        <input type="email" id="forgot-email" placeholder="name@company.com" required autocomplete="username">
         <p id="forgot-msg" class="status-line hidden"></p>
         <button type="button" class="btn btn-primary login-submit" id="forgot-send-btn">Αποστολή κωδικού</button>
         <button type="button" class="btn btn-secondary login-submit" id="forgot-have-code-btn">Έχω κωδικό</button>
@@ -32,6 +36,8 @@
       </div>
 
       <form id="reset-form" class="hidden">
+        <label for="reset-email">Email</label>
+        <input type="email" id="reset-email" placeholder="name@company.com" required autocomplete="username">
         <label for="reset-code">Κωδικός επαναφοράς</label>
         <input type="text" id="reset-code" class="code-input" placeholder="Κωδικός από email" required autocomplete="one-time-code">
         <label for="reset-new-password">Νέος κωδικός</label>
@@ -73,47 +79,77 @@
       e.preventDefault();
       const err = document.getElementById('login-error');
       err.classList.add('hidden');
+      const email = document.getElementById('email').value.trim();
       const res = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ password: document.getElementById('password').value }),
+        body: JSON.stringify({
+          email,
+          password: document.getElementById('password').value,
+        }),
       });
       if (!res.ok) {
-        err.textContent = 'Λάθος κωδικός.';
+        err.textContent = 'Λάθος email ή κωδικός.';
         err.classList.remove('hidden');
         return;
       }
+      try { localStorage.setItem('pd_admin_email', email); } catch (_) {}
       location.href = '/admin/';
     });
 
+    try {
+      const saved = localStorage.getItem('pd_admin_email');
+      if (saved) document.getElementById('email').value = saved;
+    } catch (_) {}
+
     document.getElementById('forgot-btn').addEventListener('click', () => {
       document.getElementById('forgot-msg').classList.add('hidden');
+      const email = document.getElementById('email').value.trim();
+      if (email) document.getElementById('forgot-email').value = email;
       showPanel('forgot');
     });
     document.getElementById('back-login-btn').addEventListener('click', () => showPanel('login'));
     document.getElementById('back-forgot-btn').addEventListener('click', () => showPanel('forgot'));
     document.getElementById('forgot-have-code-btn').addEventListener('click', () => {
       document.getElementById('reset-error').classList.add('hidden');
+      const email = document.getElementById('forgot-email').value.trim() || document.getElementById('email').value.trim();
+      if (email) document.getElementById('reset-email').value = email;
       showPanel('reset');
     });
 
     document.getElementById('forgot-send-btn').addEventListener('click', async () => {
       const msg = document.getElementById('forgot-msg');
+      const email = document.getElementById('forgot-email').value.trim();
+      if (!email) {
+        msg.className = 'status-line error';
+        msg.textContent = 'Συμπλήρωσε το email.';
+        msg.classList.remove('hidden');
+        return;
+      }
       msg.className = 'status-line';
       msg.textContent = 'Αποστολή...';
       msg.classList.remove('hidden');
-      const res = await fetch('/api/admin-auth/forgot', { method: 'POST', credentials: 'include' });
+      const res = await fetch('/api/admin-auth/forgot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email }),
+      });
       const data = await res.json().catch(() => ({}));
       msg.textContent = data.message || data.error || 'Ολοκληρώθηκε.';
       msg.className = res.ok ? 'status-line success' : 'status-line error';
-      if (res.ok) showPanel('reset');
+      if (res.ok) {
+        document.getElementById('reset-email').value = email;
+        showPanel('reset');
+      }
     });
 
     document.getElementById('reset-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const err = document.getElementById('reset-error');
       err.classList.add('hidden');
+      const email = document.getElementById('reset-email').value.trim();
       const newPassword = document.getElementById('reset-new-password').value;
       const confirm = document.getElementById('reset-confirm-password').value;
       if (newPassword !== confirm) {
@@ -126,6 +162,7 @@
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
+          email,
           code: document.getElementById('reset-code').value,
           newPassword,
         }),
@@ -137,6 +174,7 @@
         return;
       }
       alert(data.message || 'Ο κωδικός ενημερώθηκε.');
+      document.getElementById('email').value = email;
       showPanel('login');
       document.getElementById('password').value = '';
     });

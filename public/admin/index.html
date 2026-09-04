@@ -21,6 +21,7 @@
             <button type="button" class="nav-btn" data-view="customers">Πελάτες</button>
             <button type="button" class="nav-btn" data-view="messages">Μηνύματα</button>
             <button type="button" class="nav-btn" data-view="storage">Χώρος</button>
+            <button type="button" class="nav-btn" data-view="admins">Διαχειριστές</button>
           </nav>
         </div>
         <div class="topbar-actions">
@@ -147,6 +148,28 @@
               <tr><th>Συλλογή</th><th>Εικόνες</th><th>Full</th><th>Web</th><th>Thumb</th><th>Σύνολο</th><th></th></tr>
             </thead>
             <tbody id="storage-body"></tbody>
+          </table>
+        </div>
+      </main>
+
+      <main id="view-admins" class="view hidden">
+        <div class="view-header">
+          <h2>Διαχειριστές</h2>
+          <p class="view-subtitle">Πολλαπλοί λογαριασμοί για την ίδια εταιρεία.</p>
+        </div>
+        <p id="admins-status" class="notice-slot hidden"></p>
+        <form id="new-admin-form" class="inline-form admin-form">
+          <input type="text" id="new-admin-name" placeholder="Όνομα (προαιρετικό)">
+          <input type="email" id="new-admin-email" placeholder="Email" required>
+          <input type="password" id="new-admin-password" placeholder="Αρχικός κωδικός" required minlength="8">
+          <button type="submit" class="btn btn-primary">Προσθήκη</button>
+        </form>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Όνομα</th><th>Email</th><th></th></tr>
+            </thead>
+            <tbody id="admins-body"></tbody>
           </table>
         </div>
       </main>

@@ -1097,6 +1097,76 @@ async function loadMessages() {
     </tr>`).join('');
 }
 
+let currentAdminId = null;
+
+async function loadCurrentAdmin() {
+  try {
+    const me = await fetch('/api/admin/me', { credentials: 'include' }).then((r) => {
+      if (!r.ok) throw new Error('auth');
+      return r.json();
+    });
+    currentAdminId = me.id;
+  } catch {
+    currentAdminId = null;
+  }
+}
+
+async function loadAdmins() {
+  setStatus('admins-status', '');
+  await loadCurrentAdmin();
+  const { data } = await api('/admins');
+  const body = document.getElementById('admins-body');
+  if (!data.length) {
+    body.innerHTML = '<tr><td colspan="3">Δεν υπάρχουν διαχειριστές.</td></tr>';
+    return;
+  }
+  body.innerHTML = data.map((admin) => {
+    const isSelf = Number(admin.id) === Number(currentAdminId);
+    const canDelete = data.length > 1 && !isSelf;
+    return `<tr>
+      <td>${escapeHtml(admin.name || '—')}${isSelf ? ' <span class="pill">εσύ</span>' : ''}</td>
+      <td class="mono">${escapeHtml(admin.email)}</td>
+      <td>${canDelete
+        ? `<button type="button" class="btn btn-danger btn-sm admin-delete-btn" data-id="${admin.id}">Διαγραφή</button>`
+        : '—'}</td>
+    </tr>`;
+  }).join('');
+
+  body.querySelectorAll('.admin-delete-btn').forEach((btn) => {
+    btn.onclick = async () => {
+      if (!confirm('Διαγραφή αυτού του διαχειριστή;')) return;
+      try {
+        await api(`/admins/${btn.dataset.id}`, { method: 'DELETE' });
+        showToast('Ο διαχειριστής διαγράφηκε.', 'success');
+        loadAdmins();
+      } catch (err) {
+        setStatus('admins-status', err.message || 'Αποτυχία διαγραφής.', 'error');
+      }
+    };
+  });
+}
+
+document.getElementById('new-admin-form')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  setStatus('admins-status', '');
+  try {
+    await api('/admins', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: document.getElementById('new-admin-name').value,
+        email: document.getElementById('new-admin-email').value,
+        password: document.getElementById('new-admin-password').value,
+      }),
+    });
+    document.getElementById('new-admin-form').reset();
+    showToast('Ο διαχειριστής προστέθηκε.', 'success');
+    loadAdmins();
+  } catch (err) {
+    setStatus('admins-status', err.message || 'Αποτυχία προσθήκης.', 'error');
+  }
+});
+
 async function loadStorage() {
   const [storage, candidates] = await Promise.all([api('/storage'), api('/storage/candidates')]);
   const usedPct = storage.disk.usedPercent || 0;
@@ -1161,6 +1231,7 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
     if (btn.dataset.view === 'customers') loadCustomers();
     if (btn.dataset.view === 'messages') loadMessages();
     if (btn.dataset.view === 'storage') loadStorage();
+    if (btn.dataset.view === 'admins') loadAdmins();
   };
 });
 

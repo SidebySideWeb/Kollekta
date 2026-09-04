@@ -23,7 +23,7 @@ const {
   getRecentSnapshots,
 } = require('../lib/storage');
 const { findPurgeCandidates, purgeCollection } = require('../lib/retention');
-const { changeAdminPassword } = require('../lib/adminAuth');
+const { changeAdminPassword, listAdmins, createAdmin, deleteAdmin } = require('../lib/adminAuth');
 const {
   imageMappingSampleBuffer,
   imageMappingExportBuffer,
@@ -942,11 +942,35 @@ router.patch('/collections/:id/retention', (req, res) => {
 router.post('/change-password', (req, res) => {
   const currentPassword = String(req.body.currentPassword || '');
   const newPassword = String(req.body.newPassword || '');
-  const result = changeAdminPassword(currentPassword, newPassword);
+  const result = changeAdminPassword(req.adminId, currentPassword, newPassword);
   if (!result.ok) {
     return res.status(400).json({ error: result.error });
   }
   res.json({ ok: true, message: 'Ο κωδικός ενημερώθηκε.' });
+});
+
+router.get('/admins', (_req, res) => {
+  res.json({ data: listAdmins() });
+});
+
+router.post('/admins', (req, res) => {
+  const result = createAdmin({
+    email: req.body.email,
+    name: req.body.name,
+    password: req.body.password,
+  });
+  if (!result.ok) {
+    return res.status(400).json({ error: result.error });
+  }
+  res.status(201).json(result.admin);
+});
+
+router.delete('/admins/:id', (req, res) => {
+  const result = deleteAdmin(req.params.id, req.adminId);
+  if (!result.ok) {
+    return res.status(400).json({ error: result.error });
+  }
+  res.json({ ok: true });
 });
 
 module.exports = router;

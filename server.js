@@ -11,12 +11,16 @@ const { startRetentionJob } = require('./lib/retention');
 const { takeSnapshot } = require('./lib/storage');
 const { cleanupTmpDir } = require('./lib/uploadTmp');
 const {
-  verifyAdminPassword,
+  authenticateAdmin,
+  getAdminById,
   requestPasswordReset,
   confirmPasswordReset,
   resetAvailable,
+  ensureBootstrapAdmin,
 } = require('./lib/adminAuth');
 const db = require('./db');
+
+ensureBootstrapAdmin();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -49,8 +53,27 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser(config.SESSION_COOKIE_SECRET));
 
+function getAdminIdFromCookie(req) {
+  const raw = req.signedCookies[ADMIN_COOKIE];
+  if (raw == null || raw === false) return null;
+  // Legacy cookie value from single-password era
+  if (raw === '1') {
+    ensureBootstrapAdmin();
+    const first = db.prepare('SELECT id FROM admins ORDER BY id LIMIT 1').get();
+    return first ? first.id : null;
+  }
+  const id = Number(raw);
+  return Number.isInteger(id) && id > 0 ? id : null;
+}
+
 function isAdminAuthenticated(req) {
-  return req.signedCookies[ADMIN_COOKIE] === '1';
+  const adminId = getAdminIdFromCookie(req);
+  if (!adminId) return false;
+  const admin = getAdminById(adminId);
+  if (!admin) return false;
+  req.adminId = admin.id;
+  req.admin = admin;
+  return true;
 }
 
 function requireAdmin(req, res, next) {
@@ -68,16 +91,26 @@ app.get('/api/branding', (_req, res) => {
   });
 });
 
+app.get('/api/admin/me', requireAdmin, (req, res) => {
+  res.json({
+    id: req.admin.id,
+    email: req.admin.email,
+    name: req.admin.name || '',
+  });
+});
+
 app.post('/api/login', (req, res) => {
+  const email = String(req.body.email || '');
   const password = String(req.body.password || '');
-  if (!verifyAdminPassword(password)) {
-    return res.status(401).json({ error: 'Λάθος κωδικός πρόσβασης.' });
+  const admin = authenticateAdmin(email, password);
+  if (!admin) {
+    return res.status(401).json({ error: 'Λάθος email ή κωδικός πρόσβασης.' });
   }
-  res.cookie(ADMIN_COOKIE, '1', {
+  res.cookie(ADMIN_COOKIE, String(admin.id), {
     ...adminCookieOptions(),
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
-  res.json({ ok: true });
+  res.json({ ok: true, admin });
 });
 
 app.post('/api/logout', (req, res) => {
@@ -85,9 +118,9 @@ app.post('/api/logout', (req, res) => {
   res.json({ ok: true });
 });
 
-app.post('/api/admin-auth/forgot', async (_req, res) => {
+app.post('/api/admin-auth/forgot', async (req, res) => {
   try {
-    const result = await requestPasswordReset();
+    const result = await requestPasswordReset(req.body.email);
     res.json(result);
   } catch (error) {
     res.status(500).json({ error: error.message || 'Αποτυχία αποστολής.' });
@@ -95,9 +128,10 @@ app.post('/api/admin-auth/forgot', async (_req, res) => {
 });
 
 app.post('/api/admin-auth/reset', (req, res) => {
+  const email = String(req.body.email || '');
   const code = String(req.body.code || '');
   const newPassword = String(req.body.newPassword || '');
-  const result = confirmPasswordReset(code, newPassword);
+  const result = confirmPasswordReset(email, code, newPassword);
   if (!result.ok) {
     return res.status(400).json({ error: result.error });
   }
