@@ -408,14 +408,40 @@ function renderLogin() {
     navigate('/app');
   };
   document.getElementById('reset-btn').onclick = async () => {
-    await fetch('/api/auth/reset', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phone: document.getElementById('reset-phone').value }),
-    });
     const msg = document.getElementById('reset-msg');
-    msg.textContent = 'Αν ο αριθμός είναι καταχωρημένος, θα λάβεις νέο κωδικό.';
+    const phone = document.getElementById('reset-phone').value;
+    msg.className = 'status-line';
+    msg.textContent = 'Αποστολή...';
     msg.classList.remove('hidden');
+    await fetch('/api/auth/reset', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone }),
+    });
+    msg.className = 'status-line success';
+    msg.textContent = 'Αν ο αριθμός είναι καταχωρημένος, θα λάβεις νέο κωδικό.';
   };
+}
+
+async function doLogout() {
+  await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+  resetAuthState();
+  navigate('/app/login');
+}
+
+async function requestOwnCodeReset() {
+  if (!confirm('Θα σταλεί νέος κωδικός και θα αποσυνδεθείς. Συνέχεια;')) return;
+  try {
+    const res = await fetch('/api/auth/reset-own', { method: 'POST', credentials: 'include' });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Αποτυχία επαναφοράς.');
+    resetAuthState();
+    alert(data.message || 'Στάλθηκε νέος κωδικός. Συνδέσου ξανά.');
+    navigate('/app/login');
+  } catch (err) {
+    alert(err.message || 'Αποτυχία αποστολής νέου κωδικού.');
+  }
 }
 
 async function renderCollections() {
@@ -427,20 +453,22 @@ async function renderCollections() {
   } catch { return; }
 
   root.innerHTML = `<header class="header header-collections">
-    <h1>Συλλογές</h1>
-    <span class="header-user">${escapeHtml(me.name || '')}</span>
-    <button class="btn-icon" id="logout-btn" type="button" aria-label="Έξοδος" title="Έξοδος">⎋</button>
+    <div class="header-collections-main">
+      <h1>Συλλογές</h1>
+      <span class="header-user">${escapeHtml(me.name || '')}</span>
+    </div>
+    <div class="header-account">
+      <button type="button" class="btn btn-ghost" id="reset-code-btn">Νέος κωδικός</button>
+      <button type="button" class="btn btn-secondary header-logout-btn" id="logout-btn">Αποσύνδεση</button>
+    </div>
   </header>
   <div class="screen collections-screen">
     <h2 class="page-title">Συλλογές</h2>
     <div class="collection-list" id="collection-list"></div>
   </div>`;
 
-  document.getElementById('logout-btn').onclick = async () => {
-    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
-    resetAuthState();
-    navigate('/app/login');
-  };
+  document.getElementById('logout-btn').onclick = doLogout;
+  document.getElementById('reset-code-btn').onclick = requestOwnCodeReset;
 
   const list = document.getElementById('collection-list');
   if (!collections.length) {

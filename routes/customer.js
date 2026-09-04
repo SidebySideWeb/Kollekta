@@ -94,6 +94,15 @@ function setSessionCookie(res, token) {
   });
 }
 
+function clearSessionCookie(res) {
+  res.clearCookie(SESSION_COOKIE, {
+    httpOnly: true,
+    signed: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+  });
+}
+
 router.post('/auth/login', (req, res) => {
   const phone = normalizePhone(req.body.phone);
   const code = req.body.code;
@@ -173,8 +182,28 @@ router.post('/auth/logout', (req, res) => {
   if (token) {
     db.prepare('DELETE FROM sessions WHERE token = ?').run(token);
   }
-  res.clearCookie(SESSION_COOKIE);
+  clearSessionCookie(res);
   res.json({ ok: true });
+});
+
+router.post('/auth/reset-own', requireCustomer, async (req, res) => {
+  const customer = req.customer;
+  const { generateAccessCode } = require('../lib/codes');
+  const newCode = generateAccessCode();
+  db.prepare(
+    `UPDATE customers SET access_code = ?, code_updated_at = CURRENT_TIMESTAMP WHERE id = ?`
+  ).run(newCode, customer.id);
+  db.prepare('DELETE FROM sessions WHERE customer_id = ?').run(customer.id);
+
+  const updated = db.prepare('SELECT * FROM customers WHERE id = ?').get(customer.id);
+  const sendResult = await sendAuthMessage(updated, 'reset', { code: newCode });
+
+  clearSessionCookie(res);
+  res.json({
+    ok: true,
+    message: 'Στάλθηκε νέος κωδικός. Συνδέσου ξανά με τον νέο κωδικό.',
+    sent: Boolean(sendResult?.ok),
+  });
 });
 
 router.get('/auth/me', requireCustomer, (req, res) => {

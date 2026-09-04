@@ -7,6 +7,8 @@
 html {
   overflow-x: hidden;
   max-width: 100%;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
@@ -26,6 +28,13 @@ body {
 #app-root {
   max-width: 100%;
   overflow-x: hidden;
+}
+
+/* Prevent iOS focus-zoom (triggered by inputs < 16px) across the app */
+input,
+select,
+textarea {
+  font-size: 16px;
 }
 
 .mono {
@@ -190,13 +199,16 @@ a.btn-ghost {
   min-height: 48px;
   font-family: var(--font-sans);
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .form-card input.code-input {
   font-family: var(--font-mono);
-  font-size: 14px;
+  /* Keep 16px — iOS zooms inputs under 16px and causes horizontal scroll */
+  font-size: 16px;
   font-weight: 500;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
@@ -285,22 +297,63 @@ a.btn-ghost {
 
 .header-collections {
   justify-content: space-between;
+  gap: 8px;
+}
+
+.header-collections-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
 }
 
 .header-collections h1 {
+  position: static;
+  left: auto;
+  transform: none;
+  max-width: none;
+  text-align: left;
   flex: none;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  max-width: 50%;
-  text-align: center;
 }
 
 .header-collections .header-user {
+  font-size: 13px;
+  color: var(--on-surface-variant);
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.header-account {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.header-account .btn-ghost {
+  padding: 8px 8px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.header-logout-btn {
+  min-height: 36px;
+  padding: 6px 10px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.status-line {
+  margin: 8px 0 0;
   font-size: 14px;
   color: var(--on-surface-variant);
-  display: none;
 }
+
+.status-line.success { color: var(--success); }
+.status-line.error { color: var(--error); }
 
 .header-actions {
   display: flex;
@@ -1028,15 +1081,19 @@ a.btn-ghost {
   }
 
   .header-collections h1 {
-    position: static;
-    transform: none;
-    flex: 1;
-    text-align: left;
     font-size: 20px;
-    max-width: none;
   }
 
-  .header-collections .header-user { display: block; }
+  .header-account .btn-ghost {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .header-logout-btn {
+    min-height: 40px;
+    padding: 8px 14px;
+    font-size: 13px;
+  }
 
   .collections-screen .page-title { display: block; }
 
