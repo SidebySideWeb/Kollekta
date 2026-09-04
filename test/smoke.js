@@ -150,6 +150,10 @@ async function main() {
 
     const adminsList = await adminFetch(`${BASE}/api/admin/admins`).then((r) => r.json());
     fail(Array.isArray(adminsList.data) && adminsList.data.length >= 1, 'admin list returns at least one admin');
+    fail(adminsList.data.some((a) => a.isSuperadmin), 'superadmin is present in admin list');
+
+    const me = await adminFetch(`${BASE}/api/admin/me`).then((r) => r.json());
+    fail(me.isSuperadmin === true, 'bootstrap admin is superadmin');
 
     const secondAdminEmail = `second-admin-${Date.now()}@example.com`;
     const createdAdmin = await adminFetch(`${BASE}/api/admin/admins`, {
@@ -161,23 +165,42 @@ async function main() {
         password: 'secondpass123',
       }),
     });
-    fail(createdAdmin.status === 201, 'can create a second admin');
+    fail(createdAdmin.status === 201, 'superadmin can create a second admin');
     const createdAdminBody = await createdAdmin.json();
     fail(createdAdminBody.email === secondAdminEmail, 'created admin returns email');
+    fail(createdAdminBody.isSuperadmin !== true, 'created admin is not superadmin');
 
     await adminFetch(`${BASE}/api/logout`, { method: 'POST' });
     adminCookie = '';
     await adminLogin(secondAdminEmail, 'secondpass123');
     fail(Boolean(adminCookie), 'second admin can log in');
 
+    const forbiddenCreate = await adminFetch(`${BASE}/api/admin/admins`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: `other-${Date.now()}@example.com`,
+        name: 'Other',
+        password: 'otherpass123',
+      }),
+    });
+    fail(forbiddenCreate.status === 403, 'regular admin cannot create admins');
+
+    const forbiddenList = await adminFetch(`${BASE}/api/admin/admins`);
+    fail(forbiddenList.status === 403, 'regular admin cannot list admins');
+
     const deleteSelf = await adminFetch(`${BASE}/api/admin/admins/${createdAdminBody.id}`, { method: 'DELETE' });
-    fail(deleteSelf.status === 400, 'admin cannot delete own account');
+    fail(deleteSelf.status === 403 || deleteSelf.status === 400, 'regular admin cannot delete admins');
 
     await adminFetch(`${BASE}/api/logout`, { method: 'POST' });
     adminCookie = '';
     await adminLogin();
+
+    const deleteSuper = await adminFetch(`${BASE}/api/admin/admins/${me.id}`, { method: 'DELETE' });
+    fail(deleteSuper.status === 400, 'superadmin cannot be deleted');
+
     const deleted = await adminFetch(`${BASE}/api/admin/admins/${createdAdminBody.id}`, { method: 'DELETE' });
-    fail(deleted.ok, 'primary admin can delete second admin');
+    fail(deleted.ok, 'superadmin can delete regular admin');
 
     const images = await createImages(tmp);
 

@@ -949,18 +949,21 @@ router.post('/change-password', (req, res) => {
   res.json({ ok: true, message: 'Ο κωδικός ενημερώθηκε.' });
 });
 
-router.get('/admins', (_req, res) => {
+router.get('/admins', (req, res) => {
+  if (Number(req.admin.is_superadmin) !== 1) {
+    return res.status(403).json({ error: 'Μόνο ο superadmin μπορεί να διαχειριστεί διαχειριστές.' });
+  }
   res.json({ data: listAdmins() });
 });
 
 router.post('/admins', (req, res) => {
-  const result = createAdmin({
+  const result = createAdmin(req.adminId, {
     email: req.body.email,
     name: req.body.name,
     password: req.body.password,
   });
   if (!result.ok) {
-    return res.status(400).json({ error: result.error });
+    return res.status(result.status || 400).json({ error: result.error });
   }
   res.status(201).json(result.admin);
 });
@@ -968,7 +971,7 @@ router.post('/admins', (req, res) => {
 router.delete('/admins/:id', (req, res) => {
   const result = deleteAdmin(req.params.id, req.adminId);
   if (!result.ok) {
-    return res.status(400).json({ error: result.error });
+    return res.status(result.status || 400).json({ error: result.error });
   }
   res.json({ ok: true });
 });

@@ -1098,6 +1098,7 @@ async function loadMessages() {
 }
 
 let currentAdminId = null;
+let currentAdminIsSuperadmin = false;
 
 async function loadCurrentAdmin() {
   try {
@@ -1106,14 +1107,34 @@ async function loadCurrentAdmin() {
       return r.json();
     });
     currentAdminId = me.id;
+    currentAdminIsSuperadmin = Boolean(me.isSuperadmin);
   } catch {
     currentAdminId = null;
+    currentAdminIsSuperadmin = false;
+  }
+}
+
+function applyAdminNavPermissions() {
+  const adminsNav = document.querySelector('.nav-btn[data-view="admins"]');
+  if (!adminsNav) return;
+  adminsNav.classList.toggle('hidden', !currentAdminIsSuperadmin);
+  if (!currentAdminIsSuperadmin) {
+    const adminsView = document.getElementById('view-admins');
+    if (adminsView && !adminsView.classList.contains('hidden')) {
+      showView('collections');
+      loadCollections();
+    }
   }
 }
 
 async function loadAdmins() {
   setStatus('admins-status', '');
   await loadCurrentAdmin();
+  applyAdminNavPermissions();
+  if (!currentAdminIsSuperadmin) {
+    setStatus('admins-status', 'Μόνο ο superadmin μπορεί να διαχειριστεί διαχειριστές.', 'error');
+    return;
+  }
   const { data } = await api('/admins');
   const body = document.getElementById('admins-body');
   if (!data.length) {
@@ -1122,9 +1143,13 @@ async function loadAdmins() {
   }
   body.innerHTML = data.map((admin) => {
     const isSelf = Number(admin.id) === Number(currentAdminId);
-    const canDelete = data.length > 1 && !isSelf;
+    const badges = [
+      admin.isSuperadmin ? '<span class="pill">superadmin</span>' : '',
+      isSelf ? '<span class="pill">εσύ</span>' : '',
+    ].filter(Boolean).join(' ');
+    const canDelete = currentAdminIsSuperadmin && !admin.isSuperadmin && !isSelf;
     return `<tr>
-      <td>${escapeHtml(admin.name || '—')}${isSelf ? ' <span class="pill">εσύ</span>' : ''}</td>
+      <td>${escapeHtml(admin.name || '—')} ${badges}</td>
       <td class="mono">${escapeHtml(admin.email)}</td>
       <td>${canDelete
         ? `<button type="button" class="btn btn-danger btn-sm admin-delete-btn" data-id="${admin.id}">Διαγραφή</button>`
@@ -1358,6 +1383,7 @@ document.getElementById('bulk-tags-apply-btn')?.addEventListener('click', async 
 });
 
 applyBranding();
+loadCurrentAdmin().then(() => applyAdminNavPermissions());
 loadCollections();
 loadCustomers();
 

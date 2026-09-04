@@ -8,7 +8,7 @@
 
 - Node.js 20+
 - `ADMIN_PASSWORD` και `SESSION_COOKIE_SECRET` (υποχρεωτικά)
-- `ADMIN_EMAIL` (προτεινόμενο) — email του πρώτου διαχειριστή· επιπλέον λογαριασμοί από Admin → Διαχειριστές
+- `ADMIN_EMAIL` (προτεινόμενο) — email του **superadmin**· μόνο αυτός προσθέτει/διαγράφει άλλους admins
 
 ## Τοπική εκτέλεση
 

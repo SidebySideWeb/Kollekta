@@ -164,6 +164,7 @@ db.exec(`
     email TEXT UNIQUE NOT NULL,
     name TEXT,
     password_hash TEXT NOT NULL,
+    is_superadmin INTEGER NOT NULL DEFAULT 0,
     reset_hash TEXT,
     reset_expires TEXT,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
@@ -172,5 +173,7 @@ db.exec(`
 
   CREATE INDEX IF NOT EXISTS idx_admins_email ON admins(email);
 `);
+
+ensureColumn('admins', 'is_superadmin', 'INTEGER NOT NULL DEFAULT 0');
 
 module.exports = db;

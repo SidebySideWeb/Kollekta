@@ -337,6 +337,12 @@ async function applyBranding() {
   if (parts.length) { footer.innerHTML = parts.join(''); footer.classList.remove('hidden'); }
 }
 
+function brandLogoHtml(className = 'header-logo') {
+  if (!branding.logoPath) return '';
+  const alt = escapeHtml(branding.companyName || '');
+  return `<img src="${escapeHtml(branding.logoPath)}" alt="${alt}" class="${className}">`;
+}
+
 function renderLogin() {
   const loginHeading = branding.logoPath
     ? `<img src="${escapeHtml(branding.logoPath)}" alt="" class="login-logo">`
@@ -453,6 +459,7 @@ async function renderCollections() {
   } catch { return; }
 
   root.innerHTML = `<header class="header header-collections">
+    ${brandLogoHtml()}
     <div class="header-collections-main">
       <h1>Συλλογές</h1>
       <span class="header-user">${escapeHtml(me.name || '')}</span>
@@ -521,6 +528,7 @@ async function renderGallery() {
 
   root.innerHTML = `<header class="header gallery-header">
     <button class="btn-back" id="back-btn" type="button" aria-label="Πίσω">←</button>
+    ${brandLogoHtml('header-logo header-logo-compact')}
     <h1>${escapeHtml(data.collectionName)}</h1>
     <div class="header-actions">
       <button class="btn-ghost" id="select-all-btn" type="button">Επιλογή όλων</button>

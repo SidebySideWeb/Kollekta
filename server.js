@@ -96,6 +96,7 @@ app.get('/api/admin/me', requireAdmin, (req, res) => {
     id: req.admin.id,
     email: req.admin.email,
     name: req.admin.name || '',
+    isSuperadmin: Number(req.admin.is_superadmin) === 1,
   });
 });
 
