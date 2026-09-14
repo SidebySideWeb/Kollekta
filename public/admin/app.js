@@ -340,9 +340,17 @@ function renderStorageChart(snapshots) {
   </svg>`;
 }
 
-function storageProgressClass(usedPct, warnPercent = 80, fullAt = 100) {
-  if (usedPct >= fullAt) return 'critical';
-  if (usedPct >= warnPercent) return 'warn';
+function storageThresholds() {
+  const styles = getComputedStyle(document.documentElement);
+  const warn = Number(styles.getPropertyValue('--storage-warn-percent')) || 75;
+  const critical = Number(styles.getPropertyValue('--storage-critical-percent')) || 90;
+  return { warn, critical };
+}
+
+function storageProgressClass(usedPct) {
+  const { warn, critical } = storageThresholds();
+  if (usedPct >= critical) return 'critical';
+  if (usedPct >= warn) return 'warn';
   return '';
 }
 

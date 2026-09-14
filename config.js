@@ -34,7 +34,6 @@ const RATE_LIMIT_RESET_MAX_PER_IP = Number(process.env.RATE_LIMIT_RESET_MAX_PER_
 const QUOTA_GB = process.env.QUOTA_GB !== undefined && process.env.QUOTA_GB !== ''
   ? Number(process.env.QUOTA_GB)
   : 10;
-const QUOTA_WARN_PERCENT = Number(process.env.QUOTA_WARN_PERCENT) || 80;
 
 function parseBoolEnv(value, defaultValue) {
   if (value === undefined || value === null || value === '') return defaultValue;
@@ -231,7 +230,6 @@ module.exports = {
   RATE_LIMIT_RESET_MAX_PER_PHONE,
   RATE_LIMIT_RESET_MAX_PER_IP,
   QUOTA_GB,
-  QUOTA_WARN_PERCENT,
   PLAN,
   FEATURE_PRODUCT_CODES,
   FEATURE_ORDER_FILTERING,
