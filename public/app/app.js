@@ -337,8 +337,14 @@ async function applyBranding() {
   if (parts.length) { footer.innerHTML = parts.join(''); footer.classList.remove('hidden'); }
 }
 
+const KOLLEKTA_LOCKUP = '/shared/kollekta-lockup.svg';
+
+function platformLogoHtml(className = 'header-logo header-logo-lockup') {
+  return `<img src="${KOLLEKTA_LOCKUP}" alt="Kollekta" class="${className}">`;
+}
+
 function brandLogoHtml(className = 'header-logo') {
-  const path = branding.logoPath || '/shared/kollekta-lockup.svg';
+  const path = branding.logoPath || KOLLEKTA_LOCKUP;
   const alt = escapeHtml(branding.companyName || 'Kollekta');
   const isMarkOnly = /kollekta-mark\.svg$/i.test(path);
   const cls = isMarkOnly ? `${className} header-logo-mark` : `${className} header-logo-lockup`;
@@ -346,9 +352,15 @@ function brandLogoHtml(className = 'header-logo') {
 }
 
 function clientBrandHtml() {
-  const name = String(branding.companyName || '').trim() || 'Kollekta';
-  const src = String(branding.logoPath || '').trim() || '/shared/kollekta-lockup.svg';
-  return `<div class="client-brand" title="${escapeHtml(name)}">
+  const name = String(branding.companyName || '').trim();
+  const logoPath = String(branding.logoPath || '').trim();
+  const isDefaultLogo = !logoPath
+    || /kollekta-lockup\.svg$/i.test(logoPath)
+    || /kollekta-mark\.svg$/i.test(logoPath);
+  // Client logo beside the title — only when white-label branding is set.
+  if (!name && isDefaultLogo) return '';
+  const src = logoPath || KOLLEKTA_LOCKUP;
+  return `<div class="client-brand" title="${escapeHtml(name || 'Brand')}">
     <img src="${escapeHtml(src)}" alt="${escapeHtml(name)}" class="client-brand-logo">
   </div>`;
 }
@@ -480,7 +492,7 @@ async function renderCollections() {
 
   root.innerHTML = `<header class="header header-collections">
     <div class="header-brand">
-      ${brandLogoHtml()}
+      ${platformLogoHtml()}
     </div>
     <div class="header-collections-main">
       ${customerChipHtml(me)}
@@ -560,7 +572,7 @@ async function renderGallery() {
 
   root.innerHTML = `<header class="header gallery-header">
     <button class="btn-back" id="back-btn" type="button" aria-label="Πίσω">←</button>
-    ${brandLogoHtml('header-logo header-logo-compact')}
+    ${platformLogoHtml('header-logo header-logo-compact')}
     <h1>${escapeHtml(data.collectionName)}</h1>
     <div class="header-actions">
       <button class="btn-ghost" id="select-all-btn" type="button">Επιλογή όλων</button>

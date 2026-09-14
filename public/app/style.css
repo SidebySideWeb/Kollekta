@@ -412,18 +412,20 @@ a.btn-ghost {
 }
 
 .header-logo {
-  max-height: 32px;
-  max-width: 140px;
+  display: block;
+  height: 36px;
   width: auto;
-  height: auto;
+  max-width: 200px;
+  max-height: 36px;
   object-fit: contain;
   flex-shrink: 0;
   filter: none;
 }
 
 .header-logo-compact {
-  max-height: 26px;
-  max-width: 96px;
+  height: 28px;
+  max-height: 28px;
+  max-width: 160px;
 }
 
 .header-collections {
@@ -773,15 +775,8 @@ a.btn-ghost {
   display: flex;
   align-items: center;
   gap: 10px;
-  min-width: 0;
-}
-
-.header-logo {
-  height: 36px;
-  width: auto;
-  max-width: 200px;
-  object-fit: contain;
   flex-shrink: 0;
+  min-width: auto;
 }
 
 .header-logo-mark {
@@ -793,11 +788,6 @@ a.btn-ghost {
 .header-logo-lockup {
   height: 36px;
   max-width: 200px;
-}
-
-.header-logo-compact {
-  height: 28px;
-  max-width: 160px;
 }
 
 .header-brand-text {
