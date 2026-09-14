@@ -21,7 +21,6 @@ let features = {
   productCodes: false,
   orderFiltering: false,
   tags: false,
-  customSmtp: false,
   retentionOverride: false,
 };
 let brandingContactEmail = '';
@@ -111,7 +110,7 @@ function estimateOptimizedUploadBytes(files) {
   }, 0);
 }
 
-function updateUploadSizeEstimate(files = null, measuredBps = null) {
+function updateUploadSizeEstimate(files = null, measuredBps = null, preparedBytes = null) {
   const el = document.getElementById('upload-size-estimate');
   if (!el) return;
   const list = files || [...(document.getElementById('images-input')?.files || [])];
@@ -123,7 +122,9 @@ function updateUploadSizeEstimate(files = null, measuredBps = null) {
 
   const originalBytes = sumFileBytes(list);
   const mode = getUploadQualityMode();
-  const optimizedBytes = mode === 'optimized' ? estimateOptimizedUploadBytes(list) : originalBytes;
+  const optimizedBytes = preparedBytes != null
+    ? preparedBytes
+    : (mode === 'optimized' ? estimateOptimizedUploadBytes(list) : originalBytes);
   const speed = measuredBps > 0 ? measuredBps : IMAGE_UPLOAD_PROBE_BPS;
   const originalMins = formatMinutesEstimate(originalBytes, speed);
   const optimizedMins = formatMinutesEstimate(optimizedBytes, speed);
@@ -616,9 +617,9 @@ function createImageUploadSession(files) {
       const current = this.totalBytes ? (currentBytes / this.totalBytes) * total : this.completedCount();
       const done = Math.min(total, Math.floor(current));
       const speed = this.bytesPerSecond;
-      let message = `Ανέβασμα ${done} από ${total}`;
+      let message = `Ανέβασμα ${done} από ${total}...`;
       if (speed && speed > 0) {
-        message += ` · ${formatUploadSpeed(speed)}`;
+        message = `Ανέβασμα ${done} από ${total} · ${formatUploadSpeed(speed)}`;
         const eta = formatUploadEta(this.remainingBytes() / speed);
         if (eta) message += ` · ${eta}`;
       }
@@ -755,7 +756,6 @@ async function applyBranding() {
     productCodes: Boolean(b.features?.productCodes),
     orderFiltering: Boolean(b.features?.orderFiltering),
     tags: Boolean(b.features?.tags),
-    customSmtp: Boolean(b.features?.customSmtp),
     retentionOverride: Boolean(b.features?.retentionOverride),
   };
   brandingContactEmail = String(b.companyEmail || '').trim();
@@ -996,7 +996,7 @@ function renderWizard(collection, audience = { visibility: 'all', selectedTags: 
             <input type="radio" name="upload-quality" value="optimized" checked>
             <div>
               <strong>Βελτιστοποιημένο (προτείνεται)</strong>
-              <p class="subtitle">Κατάλληλο για eshop και εκτύπωση έως 25cm</p>
+              <p class="subtitle">3000px · ~2.5MB ανά εικόνα — κατάλληλο για eshop και εκτύπωση έως 25cm</p>
             </div>
           </label>
           <label class="upload-quality-option">
@@ -1278,7 +1278,7 @@ async function uploadImages() {
   }
 
   const totalBytes = sumFileBytes(files);
-  updateUploadSizeEstimate(selectedFiles);
+  updateUploadSizeEstimate(selectedFiles, null, optimized ? totalBytes : null);
 
   const quota = await fetchQuotaStatus();
   applyQuotaBanner(quota);
@@ -1306,7 +1306,7 @@ async function uploadImages() {
       failures: batchFailures,
     });
     if (session.bytesPerSecond) {
-      updateUploadSizeEstimate(selectedFiles, session.bytesPerSecond);
+      updateUploadSizeEstimate(selectedFiles, session.bytesPerSecond, optimized ? totalBytes : null);
     }
   };
 
@@ -1329,7 +1329,7 @@ async function uploadImages() {
         if (session.bytesPerSecond) {
           const refinedMinutes = Math.max(1, Math.ceil(session.remainingBytes() / session.bytesPerSecond / 60));
           batchFailures.push(`Εκτίμηση μετά την πρώτη παρτίδα: περίπου ${refinedMinutes} λεπτά ακόμα.`);
-          updateUploadSizeEstimate(selectedFiles, session.bytesPerSecond);
+          updateUploadSizeEstimate(selectedFiles, session.bytesPerSecond, optimized ? totalBytes : null);
           refreshUi();
         }
       }

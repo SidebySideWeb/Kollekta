@@ -44,6 +44,14 @@ docker run -p 3000:3000 \
   kollekta:latest
 ```
 
+Το container τρέχει ως μη-root χρήστης `node` (uid 1000). Αν κάνεις bind
+mount των `data` / `uploads` / `logo` από το host, πρέπει να ανήκουν στο
+ίδιο uid, αλλιώς η εφαρμογή δεν μπορεί να γράψει:
+
+```bash
+chown -R 1000:1000 /srv/kollekta/{data,uploads,logo}
+```
+
 ## Meta-admin
 
 Δείτε το `../meta-admin/README.md` για provisioning πολλαπλών instances με Docker.

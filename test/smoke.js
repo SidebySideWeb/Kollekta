@@ -122,7 +122,6 @@ function withPlanConfig(plan, fn) {
     FEATURE_PRODUCT_CODES: process.env.FEATURE_PRODUCT_CODES,
     FEATURE_ORDER_FILTERING: process.env.FEATURE_ORDER_FILTERING,
     FEATURE_TAGS: process.env.FEATURE_TAGS,
-    FEATURE_CUSTOM_SMTP: process.env.FEATURE_CUSTOM_SMTP,
     FEATURE_RETENTION_OVERRIDE: process.env.FEATURE_RETENTION_OVERRIDE,
   };
 
@@ -778,6 +777,62 @@ async function main() {
       );
     });
     db.prepare('DELETE FROM collections WHERE id = ?').run(ancient.lastInsertRowid);
+
+    // --- Admin login rate limit + cookie flags ---
+    await withTempServer({ RATE_LIMIT_DISABLED: 'false' }, async (adminRlBase) => {
+      const blockedIp = '198.51.100.50';
+      const otherIp = '198.51.100.99';
+      const loginHeaders = (ip) => ({
+        'Content-Type': 'application/json',
+        'X-Forwarded-For': ip,
+      });
+
+      let lastFailStatus = 0;
+      for (let i = 0; i < 5; i += 1) {
+        const failRes = await fetch(`${adminRlBase}/api/login`, {
+          method: 'POST',
+          headers: loginHeaders(blockedIp),
+          body: JSON.stringify({ email: ADMIN_EMAIL, password: 'definitely-wrong-password' }),
+        });
+        lastFailStatus = failRes.status;
+      }
+      fail(lastFailStatus === 401, 'first 5 failed admin logins return 401');
+
+      const sixth = await fetch(`${adminRlBase}/api/login`, {
+        method: 'POST',
+        headers: loginHeaders(blockedIp),
+        body: JSON.stringify({ email: ADMIN_EMAIL, password: 'definitely-wrong-password' }),
+      });
+      const sixthBody = await sixth.json().catch(() => ({}));
+      fail(sixth.status === 429, '6th failed admin login from same IP within 15 minutes returns 429');
+      fail(
+        typeof sixthBody.error === 'string' && /προσπάθειες|αργότερα/i.test(sixthBody.error),
+        'admin login 429 returns generic Greek message'
+      );
+
+      const otherIpOk = await fetch(`${adminRlBase}/api/login`, {
+        method: 'POST',
+        headers: loginHeaders(otherIp),
+        body: JSON.stringify({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD }),
+      });
+      fail(otherIpOk.status === 200, 'correct password still works from a different IP during the block');
+    });
+
+    await withTempServer({ NODE_ENV: 'production', RATE_LIMIT_DISABLED: 'true' }, async (prodBase) => {
+      const loginRes = await fetch(`${prodBase}/api/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD }),
+      });
+      fail(loginRes.status === 200, 'admin login succeeds under NODE_ENV=production');
+      const setCookies = loginRes.headers.getSetCookie
+        ? loginRes.headers.getSetCookie()
+        : [loginRes.headers.get('set-cookie')].filter(Boolean);
+      const adminSetCookie = setCookies.find((c) => /^pd_admin=/i.test(c)) || '';
+      fail(/HttpOnly/i.test(adminSetCookie), 'admin session cookie has httpOnly when NODE_ENV=production');
+      fail(/Secure/i.test(adminSetCookie), 'admin session cookie has secure when NODE_ENV=production');
+      fail(/SameSite=Strict/i.test(adminSetCookie), 'admin session cookie has sameSite=strict when NODE_ENV=production');
+    });
 
     // Disable customer
     await adminFetch(`${BASE}/api/admin/customers/${c1.customer.id}`, {

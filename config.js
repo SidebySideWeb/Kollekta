@@ -71,14 +71,12 @@ const DEFAULT_RETENTION_MONTHS = parseRetentionMonthsEnv(
 const FEATURE_PRODUCT_CODES = parseBoolEnv(process.env.FEATURE_PRODUCT_CODES, planIsProPlus);
 const FEATURE_ORDER_FILTERING = parseBoolEnv(process.env.FEATURE_ORDER_FILTERING, planIsProPlus);
 const FEATURE_TAGS = parseBoolEnv(process.env.FEATURE_TAGS, planIsProPlus);
-const FEATURE_CUSTOM_SMTP = parseBoolEnv(process.env.FEATURE_CUSTOM_SMTP, planIsProPlus);
 const FEATURE_RETENTION_OVERRIDE = parseBoolEnv(process.env.FEATURE_RETENTION_OVERRIDE, planIsProPlus);
 
 const features = {
   productCodes: FEATURE_PRODUCT_CODES,
   orderFiltering: FEATURE_ORDER_FILTERING,
   tags: FEATURE_TAGS,
-  customSmtp: FEATURE_CUSTOM_SMTP,
   retentionOverride: FEATURE_RETENTION_OVERRIDE,
 };
 
@@ -155,9 +153,6 @@ if (!ADMIN_PASSWORD) fail('ADMIN_PASSWORD είναι υποχρεωτικό.');
 if (!SESSION_COOKIE_SECRET) fail('SESSION_COOKIE_SECRET είναι υποχρεωτικό.');
 
 if (EMAIL_PROVIDER === 'smtp') {
-  if (!FEATURE_CUSTOM_SMTP) {
-    fail('Το τρέχον πακέτο δεν περιλαμβάνει custom SMTP. Ανέβασε το PLAN ή βάλε FEATURE_CUSTOM_SMTP=true, αλλιώς χρησιμοποίησε EMAIL_PROVIDER=resend|console.');
-  }
   if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS || !EMAIL_FROM) {
     fail('Για EMAIL_PROVIDER=smtp απαιτούνται SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS και EMAIL_FROM (ή COMPANY_NAME + APP_PUBLIC_URL).');
   }
@@ -241,7 +236,6 @@ module.exports = {
   FEATURE_PRODUCT_CODES,
   FEATURE_ORDER_FILTERING,
   FEATURE_TAGS,
-  FEATURE_CUSTOM_SMTP,
   FEATURE_RETENTION_OVERRIDE,
   features,
   featureRequiredMessage,
