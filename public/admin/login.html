@@ -78,14 +78,13 @@
       if (b.storageCriticalPercent) {
         document.documentElement.style.setProperty('--storage-critical-percent', b.storageCriticalPercent);
       }
-      const title = b.companyName || 'Kollekta';
-      document.getElementById('login-title').textContent = title;
+      document.getElementById('login-title').textContent = 'Kollekta';
       const loginLogo = document.getElementById('login-logo');
-      if (loginLogo && b.logoPath) {
-        loginLogo.src = b.logoPath;
-        loginLogo.alt = title;
+      if (loginLogo) {
+        loginLogo.src = '/shared/kollekta-lockup.svg';
+        loginLogo.alt = 'Kollekta';
       }
-      document.title = title + ' — Σύνδεση';
+      document.title = (b.companyName ? `${b.companyName} · ` : '') + 'Kollekta — Σύνδεση';
       resetAvailable = Boolean(b.adminResetAvailable);
       document.getElementById('forgot-btn').classList.toggle('hidden', !resetAvailable);
     });

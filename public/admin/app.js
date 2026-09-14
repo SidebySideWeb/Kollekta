@@ -740,23 +740,17 @@ async function applyBranding() {
   }
   document.title = b.companyName ? `${b.companyName} Admin` : 'Kollekta Admin';
   const logo = document.getElementById('brand-logo');
-  const name = document.getElementById('brand-name');
   const brandText = document.querySelector('.brand-text');
-  const defaultLockup = '/shared/kollekta-lockup.svg';
-  const logoPath = b.logoPath || defaultLockup;
-  const isMarkOnly = /kollekta-mark\.svg$/i.test(logoPath);
-  logo.src = logoPath;
-  logo.alt = b.companyName || 'Kollekta';
-  logo.classList.remove('hidden');
-  logo.classList.toggle('brand-logo-mark', isMarkOnly);
-  logo.classList.toggle('brand-logo-full', !isMarkOnly);
-  // Full lockups already include the wordmark — only show text next to a mark icon.
-  if (isMarkOnly) {
-    brandText?.classList.remove('hidden');
-    name.textContent = b.companyName || 'Kollekta';
-  } else {
-    brandText?.classList.add('hidden');
+  // Admin chrome always shows the Kollekta product lockup — never the client LOGO_PATH.
+  const kollektaLockup = '/shared/kollekta-lockup.svg';
+  if (logo) {
+    logo.src = kollektaLockup;
+    logo.alt = 'Kollekta';
+    logo.classList.remove('hidden');
+    logo.classList.remove('brand-logo-mark');
+    logo.classList.add('brand-logo-full');
   }
+  brandText?.classList.add('hidden');
   features = {
     productCodes: Boolean(b.features?.productCodes),
     orderFiltering: Boolean(b.features?.orderFiltering),
