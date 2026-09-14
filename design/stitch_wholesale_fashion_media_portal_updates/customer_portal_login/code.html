@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+
+<html lang="el"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Kollekta B2B Portal</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "on-surface": "#0b1c30", "secondary-container": "#dae2fd", "body-ink": "#334155", "on-primary": "#ffffff", "tertiary-fixed": "#cce5ff", "inverse-surface": "#213145", "primary": "#004ac6", "secondary-fixed-dim": "#bec6e0", "surface-container-low": "#eff4ff", "primary-fixed": "#dbe1ff", "on-tertiary": "#ffffff", "error": "#ba1a1a", "outline-variant": "#c3c6d7", "surface-bright": "#f8f9ff", "surface-container-lowest": "#ffffff", "tertiary": "#005a89", "primary-fixed-dim": "#b4c5ff", "primary-container": "#2563eb", "on-primary-container": "#eeefff", "on-secondary-fixed-variant": "#3f465c", "slate-hairline": "#E2E8F0", "status-positive": "#765B00", "secondary": "#565e74", "surface": "#f8f9ff", "error-container": "#ffdad6", "surface-white": "#FFFFFF", "tertiary-container": "#0073ae", "surface-tint": "#0053db", "background": "#f8f9ff", "on-tertiary-fixed": "#001d31", "outline": "#737686", "status-danger-container": "#FFDAD6", "surface-container-highest": "#d3e4fe", "on-primary-fixed-variant": "#003ea8", "inverse-on-surface": "#eaf1ff", "on-background": "#0b1c30", "secondary-fixed": "#dae2fd", "on-secondary": "#ffffff", "status-positive-container": "#FFDF93", "surface-container-high": "#dce9ff", "surface-variant": "#d3e4fe", "on-secondary-fixed": "#131b2e", "on-tertiary-container": "#e7f2ff", "status-danger": "#BA1A1A", "on-error-container": "#93000a", "on-secondary-container": "#5c647a", "on-primary-fixed": "#00174b", "tertiary-fixed-dim": "#93ccff", "surface-container": "#e5eeff", "inverse-primary": "#b4c5ff", "on-surface-variant": "#434655", "canvas-mist": "#F8FAFC", "on-tertiary-fixed-variant": "#004b73", "surface-dim": "#cbdbf5", "on-error": "#ffffff" }, "borderRadius": { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" }, "spacing": { "gutter": "1rem", "margin-desktop": "2rem", "space-xs": "0.25rem", "margin": "1rem", "space-lg": "1.5rem", "space-sm": "0.5rem", "gutter-desktop": "1.5rem", "space-md": "1rem", "space-xl": "2rem" }, "fontFamily": { "body-editorial": ["Public Sans"], "label-tag": ["Public Sans"], "display-hero": ["Public Sans"], "label-button": ["Public Sans"], "label-eyebrow": ["Public Sans"], "headline-lg": ["Public Sans"], "body-micro": ["Public Sans"], "body-default": ["Public Sans"], "headline-md": ["Public Sans"], "headline-sm": ["Public Sans"], "title-md": ["Public Sans"], "display-hero-mobile": ["Public Sans"] }, "fontSize": { "body-editorial": ["14px", { "lineHeight": "21px", "letterSpacing": "0", "fontWeight": "400" }], "label-tag": ["10px", { "lineHeight": "14px", "letterSpacing": "0.025em", "fontWeight": "700" }], "display-hero": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.025em", "fontWeight": "700" }], "label-button": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "600" }], "label-eyebrow": ["11px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }], "headline-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.025em", "fontWeight": "600" }], "body-micro": ["12px", { "lineHeight": "18px", "letterSpacing": "0", "fontWeight": "400" }], "body-default": ["13px", { "lineHeight": "20px", "letterSpacing": "0", "fontWeight": "400" }], "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.02em", "fontWeight": "600" }], "headline-sm": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "title-md": ["15px", { "lineHeight": "22px", "letterSpacing": "-0.01em", "fontWeight": "500" }], "display-hero-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700" }] } } } }</script></head><body class="bg-canvas-mist font-body-default text-body-ink min-h-screen flex items-center justify-center p-space-md"><main class="w-full max-w-md"><div class="flex flex-col w-full items-center justify-center py-space-xl">
+<!-- Interactive Viewports Container -->
+<div class="w-full max-w-[420px] flex flex-col gap-space-lg relative">
+<!-- State Toggle Bar for Merchandiser / Buyer Sandbox -->
+<div class="flex items-center justify-between px-space-md py-space-xs rounded-full bg-surface-container-low shadow-sm">
+<div class="flex items-center gap-space-xs">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span class="font-label-tag text-label-tag text-secondary uppercase">B2B Session Auth</span>
+</div>
+<div class="flex gap-1">
+<button class="px-space-sm py-1 font-label-button text-label-button rounded bg-surface-container-lowest text-primary shadow-sm transition-all duration-150" id="tab-login-btn" onclick="switchState('login')">
+          Σύνδεση
+        </button>
+<button class="px-space-sm py-1 font-label-button text-label-button rounded text-secondary hover:text-on-surface transition-all duration-150" id="tab-recovery-btn" onclick="switchState('recovery')">
+          Ανάκτηση SMS
+        </button>
+</div>
+</div>
+<!-- PRIMARY PANEL: Authentication Card -->
+<div class="w-full bg-surface-container-lowest rounded-xl shadow-md p-space-lg flex flex-col transition-all duration-300" id="panel-login">
+<!-- Brand Lockup -->
+<div class="flex flex-col items-center justify-center pt-space-xs pb-space-lg">
+<div class="h-10 w-auto flex items-center justify-center mb-space-xs">
+<img alt="Kollekta B2B Portal Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUTJRelZYRWZD4SqDrjmRzusiBnSOqJ2eVtOl0WkT8HillbPCZN1qmDMBpXkTN25lWYBpwPh9PoBzapazkNwHP9mujhWglrjeYLyQS0Td4-DtYCxNxkWb9QoWryeuZjN_choe2HZnPP0RysDcqVdlkhJ8Q6XIdVsVWR6tm7038TotcTY05wTqRtYZBsZrW5uRLEtYV9adLHohpZd4LZmtoJm7jCmilws620pogGfZOBEv7_8_lPOdVa8Wpt8eUNN0efw"/>
+</div>
+<div class="flex items-center gap-space-xs mt-space-xs">
+<span class="font-label-eyebrow text-label-eyebrow tracking-widest text-secondary uppercase">B2B MEDIA SUITE</span>
+<span class="w-1 h-1 rounded-full bg-secondary-fixed-dim"></span>
+<span class="font-label-tag text-label-tag text-primary-container font-semibold">WHOLESALE</span>
+</div>
+</div>
+<!-- Header Section -->
+<div class="flex flex-col gap-1 mb-space-lg">
+<h1 class="font-headline-sm text-headline-sm text-on-surface tracking-tight">Σύνδεση</h1>
+<p class="font-body-default text-body-default text-secondary">
+          Είσοδος στον χώρο προβολής και λήψης συλλογών
+        </p>
+</div>
+<!-- Auth Form -->
+<form class="flex flex-col gap-space-md" onsubmit="event.preventDefault(); triggerAuthError();">
+<!-- Field 1: Phone -->
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<label class="font-label-button text-label-button text-on-surface" for="phone-input">Κινητό τηλέφωνο</label>
+<span class="font-body-micro text-body-micro text-secondary">GR (+30)</span>
+</div>
+<div class="relative flex items-center">
+<input class="w-full h-9 px-3 bg-surface-container-low text-on-surface font-body-default text-body-default rounded focus:outline-none focus:bg-surface-container-lowest shadow-sm transition-all" id="phone-input" placeholder="69…" type="tel" value="694 000 0001"/>
+<span class="material-symbols-outlined absolute right-3 text-secondary text-sm pointer-events-none">smartphone</span>
+</div>
+</div>
+<!-- Field 2: Password -->
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<label class="font-label-button text-label-button text-on-surface" for="password-input">Κωδικός πρόσβασης</label>
+<button class="font-body-micro text-body-micro text-primary hover:underline" onclick="togglePasswordVisibility()" type="button">
+              Προβολή
+            </button>
+</div>
+<div class="relative flex items-center">
+<input class="w-full h-9 px-3 uppercase tracking-widest bg-surface-container-low text-on-surface font-body-default text-body-default rounded focus:outline-none focus:bg-surface-container-lowest shadow-sm transition-all" id="password-input" placeholder="••••••••" type="password"/>
+<span class="material-symbols-outlined absolute right-3 text-secondary text-sm pointer-events-none">lock</span>
+</div>
+</div>
+<!-- Action Button -->
+<button class="w-full h-9 mt-1 bg-primary-container hover:opacity-90 active:scale-[0.99] text-on-primary font-label-button text-label-button rounded shadow-sm flex items-center justify-center gap-2 transition-all" type="submit">
+<span>Σύνδεση</span>
+<span class="material-symbols-outlined text-base">arrow_forward</span>
+</button>
+<!-- Auxiliary Action -->
+<div class="flex justify-center pt-space-xs">
+<button class="font-body-micro text-body-micro text-primary hover:text-on-primary-fixed-variant hover:underline transition-colors" onclick="switchState('recovery')" type="button">
+            Ξέχασα τον κωδικό μου
+          </button>
+</div>
+</form>
+<!-- Demonstration Feedback States: Errors & Threshold Warning -->
+<div class="mt-space-lg pt-space-md flex flex-col gap-space-sm bg-surface-container-low -mx-space-lg -mb-space-lg p-space-md rounded-b-xl">
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-tag text-label-tag text-secondary uppercase tracking-wider">Demo Προειδοποιήσεων</span>
+<span class="font-body-micro text-body-micro text-secondary font-mono">ERR_401 / RATE_LIMIT</span>
+</div>
+<!-- Inline Error Message -->
+<div class="flex items-start gap-2 bg-error-container text-on-error-container p-2.5 rounded shadow-sm">
+<span class="material-symbols-outlined text-error text-base flex-shrink-0 mt-0.5" style="font-variation-settings: 'FILL' 1;">error</span>
+<div class="flex flex-col">
+<span class="font-label-button text-label-button text-status-danger font-semibold">Σφάλμα Αυθεντικοποίησης</span>
+<span class="font-body-micro text-body-micro text-status-danger leading-tight">Λάθος κινητό ή κωδικός πρόσβασης.</span>
+</div>
+</div>
+<!-- Inline Rate Limit / Throttling Notice -->
+<div class="flex items-start gap-2 bg-status-positive-container text-on-surface p-2.5 rounded shadow-sm">
+<span class="material-symbols-outlined text-status-positive text-base flex-shrink-0 mt-0.5" style="font-variation-settings: 'FILL' 1;">shield_with_heart</span>
+<div class="flex flex-col">
+<span class="font-label-button text-label-button text-on-surface font-semibold">Προστασία Συστήματος</span>
+<span class="font-body-micro text-body-micro text-body-ink leading-tight">Πάρα πολλές προσπάθειες. Δοκιμάστε ξανά σε 15 λεπτά.</span>
+</div>
+</div>
+</div>
+</div>
+<!-- RECOVERY PANEL: Swapped Forgot Password State View -->
+<div class="hidden w-full bg-surface-container-lowest rounded-xl shadow-md p-space-lg flex flex-col transition-all duration-300" id="panel-recovery">
+<!-- Brand Lockup -->
+<div class="flex flex-col items-center justify-center pt-space-xs pb-space-lg">
+<div class="h-10 w-auto flex items-center justify-center mb-space-xs">
+<img alt="Kollekta B2B Portal Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBW06081QVzXgnSbWj-hAHiSZgRFOGEZvfaql9H8QdRql-9R1ULAArTCuOHPptbg202L4d9riGx8lzvg80uiX6lEwlwOgB340e4t5Plj6UCVUhj6pqcPEtqsNK_SIBEZgS0RzUGmHecBi_edHMZ5-Am_y4MmFoi6RcMQWPdsn5nru4jehDZNYmKffJosF-xLpZ5jcC_OkmREf-svS7X5eWsgFG2mtaqIXBcBj-axUsxNaonY8tlq3MTc3VDYeRm3dZgUA"/>
+</div>
+<div class="flex items-center gap-space-xs mt-space-xs">
+<span class="font-label-eyebrow text-label-eyebrow tracking-widest text-secondary uppercase">B2B MEDIA SUITE</span>
+<span class="w-1 h-1 rounded-full bg-secondary-fixed-dim"></span>
+<span class="font-label-tag text-label-tag text-tertiary-container font-semibold">SECURITY PASS</span>
+</div>
+</div>
+<!-- Header Section -->
+<div class="flex flex-col gap-1 mb-space-md">
+<h2 class="font-headline-sm text-headline-sm text-on-surface tracking-tight">Ανάκτηση Κωδικού</h2>
+<div class="p-space-sm bg-surface-container-low rounded my-1 shadow-sm">
+<p class="font-body-editorial text-body-editorial text-body-ink">
+            Εισάγετε το κινητό τηλέφωνο που είναι συνδεδεμένο με τον λογαριασμό σας χονδρικής για να λάβετε νέο κωδικό μέσω SMS.
+          </p>
+</div>
+</div>
+<!-- Recovery Form -->
+<form class="flex flex-col gap-space-md" onsubmit="event.preventDefault(); showConfirmationBanner();">
+<div class="flex flex-col gap-1.5">
+<label class="font-label-button text-label-button text-on-surface" for="recovery-phone-input">Κινητό τηλέφωνο</label>
+<div class="relative flex items-center">
+<input class="w-full h-9 px-3 bg-surface-container-low text-on-surface font-body-default text-body-default rounded focus:outline-none focus:bg-surface-container-lowest shadow-sm transition-all" id="recovery-phone-input" placeholder="69…" type="tel" value="694 000 0001"/>
+<span class="material-symbols-outlined absolute right-3 text-secondary text-sm pointer-events-none">sms</span>
+</div>
+</div>
+<button class="w-full h-9 mt-1 bg-primary-container hover:opacity-90 active:scale-[0.99] text-on-primary font-label-button text-label-button rounded shadow-sm flex items-center justify-center gap-2 transition-all" type="submit">
+<span class="material-symbols-outlined text-base">send_to_mobile</span>
+<span>Αποστολή νέου κωδικού</span>
+</button>
+<div class="flex justify-center pt-space-xs">
+<button class="inline-flex items-center gap-1 font-body-micro text-body-micro text-secondary hover:text-on-surface transition-colors" onclick="switchState('login')" type="button">
+<span>← Επιστροφή στη σύνδεση</span>
+</button>
+</div>
+</form>
+<!-- Verification Toast Simulation -->
+<div class="hidden mt-space-md p-space-sm bg-secondary-container text-on-secondary-fixed rounded shadow-sm flex items-center gap-2" id="sms-toast">
+<span class="material-symbols-outlined text-primary text-base" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-body-micro text-body-micro">Ο κωδικός στάλθηκε επιτυχώς μέσω SMS!</span>
+</div>
+</div>
+<!-- Editorial Footer Architecture -->
+<div class="flex flex-col items-center justify-center gap-1.5 text-center">
+<div class="flex items-center gap-2 font-body-micro text-body-micro text-secondary">
+<span>Kollekta Showroom © 2025</span>
+<span>·</span>
+<span>Πρωτόκολλο Ασφαλείας TLS 1.3</span>
+</div>
+<p class="font-label-tag text-label-tag text-secondary tracking-wider uppercase">
+        Αποκλειστικη χρηση για εξουσιοδοτημενους εμπορικους συνεργατες
+      </p>
+</div>
+</div>
+<script>
+    function switchState(targetState) {
+      const loginPanel = document.getElementById('panel-login');
+      const recoveryPanel = document.getElementById('panel-recovery');
+      const loginBtn = document.getElementById('tab-login-btn');
+      const recoveryBtn = document.getElementById('tab-recovery-btn');
+
+      if (targetState === 'login') {
+        loginPanel.classList.remove('hidden');
+        recoveryPanel.classList.add('hidden');
+        loginBtn.className = "px-space-sm py-1 font-label-button text-label-button rounded bg-surface-container-lowest text-primary shadow-sm transition-all duration-150";
+        recoveryBtn.className = "px-space-sm py-1 font-label-button text-label-button rounded text-secondary hover:text-on-surface transition-all duration-150";
+      } else {
+        loginPanel.classList.add('hidden');
+        recoveryPanel.classList.remove('hidden');
+        recoveryBtn.className = "px-space-sm py-1 font-label-button text-label-button rounded bg-surface-container-lowest text-primary shadow-sm transition-all duration-150";
+        loginBtn.className = "px-space-sm py-1 font-label-button text-label-button rounded text-secondary hover:text-on-surface transition-all duration-150";
+      }
+    }
+
+    function togglePasswordVisibility() {
+      const pwdInput = document.getElementById('password-input');
+      if (pwdInput.type === 'password') {
+        pwdInput.type = 'text';
+      } else {
+        pwdInput.type = 'password';
+      }
+    }
+
+    function showConfirmationBanner() {
+      const toast = document.getElementById('sms-toast');
+      toast.classList.remove('hidden');
+      setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 4000);
+    }
+
+    function triggerAuthError() {
+      const pwdInput = document.getElementById('password-input');
+      pwdInput.classList.add('bg-error-container');
+      setTimeout(() => {
+        pwdInput.classList.remove('bg-error-container');
+      }, 1000);
+    }
+  </script>
+</div></main></body></html>

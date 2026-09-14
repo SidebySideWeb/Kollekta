@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+
+<html lang="el"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"outline":"#737686","on-secondary-fixed":"#131b2e","slate-hairline":"#E2E8F0","primary-container":"#2563eb","surface-tint":"#0053db","on-primary-fixed":"#00174b","outline-variant":"#c3c6d7","on-error":"#ffffff","on-surface-variant":"#434655","inverse-on-surface":"#eaf1ff","tertiary-container":"#0073ae","on-error-container":"#93000a","secondary-fixed-dim":"#bec6e0","status-danger":"#BA1A1A","secondary":"#565e74","primary-fixed":"#dbe1ff","surface-dim":"#cbdbf5","status-positive-container":"#FFDF93","surface-white":"#FFFFFF","secondary-container":"#dae2fd","primary-fixed-dim":"#b4c5ff","canvas-mist":"#F8FAFC","primary":"#004ac6","on-secondary-container":"#5c647a","error-container":"#ffdad6","surface":"#f8f9ff","on-tertiary-fixed-variant":"#004b73","on-secondary-fixed-variant":"#3f465c","on-secondary":"#ffffff","surface-container-low":"#eff4ff","tertiary-fixed-dim":"#93ccff","surface-container-highest":"#d3e4fe","on-surface":"#0b1c30","surface-variant":"#d3e4fe","error":"#ba1a1a","on-tertiary-fixed":"#001d31","status-positive":"#765B00","surface-bright":"#f8f9ff","secondary-fixed":"#dae2fd","tertiary":"#005a89","on-tertiary-container":"#e7f2ff","surface-container-lowest":"#ffffff","on-primary":"#ffffff","surface-container-high":"#dce9ff","on-primary-fixed-variant":"#003ea8","on-primary-container":"#eeefff","body-ink":"#334155","background":"#f8f9ff","inverse-surface":"#213145","status-danger-container":"#FFDAD6","surface-container":"#e5eeff","on-tertiary":"#ffffff","on-background":"#0b1c30","inverse-primary":"#b4c5ff","tertiary-fixed":"#cce5ff"},borderRadius:{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},spacing:{"gutter-desktop":"1.5rem","space-lg":"1.5rem","space-xl":"2rem","gutter":"1rem","margin-desktop":"2rem","margin":"1rem","space-md":"1rem","space-xs":"0.25rem","space-sm":"0.5rem"},fontFamily:{"label-tag":["Public Sans"],"title-md":["Public Sans"],"display-hero-mobile":["Public Sans"],"headline-md":["Public Sans"],"body-default":["Public Sans"],"headline-lg":["Public Sans"],"label-eyebrow":["Public Sans"],"headline-sm":["Public Sans"],"body-editorial":["Public Sans"],"body-micro":["Public Sans"],"label-button":["Public Sans"],"display-hero":["Public Sans"]},fontSize:{"label-tag":["10px",{"lineHeight":"14px","letterSpacing":"0.025em","fontWeight":"700"}],"title-md":["15px",{"lineHeight":"22px","letterSpacing":"-0.01em","fontWeight":"500"}],"display-hero-mobile":["24px",{"lineHeight":"32px","letterSpacing":"-0.02em","fontWeight":"700"}],"headline-md":["20px",{"lineHeight":"28px","letterSpacing":"-0.02em","fontWeight":"600"}],"body-default":["13px",{"lineHeight":"20px","letterSpacing":"0","fontWeight":"400"}],"headline-lg":["28px",{"lineHeight":"36px","letterSpacing":"-0.025em","fontWeight":"600"}],"label-eyebrow":["11px",{"lineHeight":"16px","letterSpacing":"0.05em","fontWeight":"700"}],"headline-sm":["18px",{"lineHeight":"24px","letterSpacing":"-0.02em","fontWeight":"700"}],"body-editorial":["14px",{"lineHeight":"21px","letterSpacing":"0","fontWeight":"400"}],"body-micro":["12px",{"lineHeight":"18px","letterSpacing":"0","fontWeight":"400"}],"label-button":["12px",{"lineHeight":"16px","letterSpacing":"0.01em","fontWeight":"600"}],"display-hero":["30px",{"lineHeight":"38px","letterSpacing":"-0.025em","fontWeight":"700"}]}}}}</script></head><body class="bg-canvas-mist text-body-ink font-body-default text-body-default antialiased min-h-screen flex flex-col"><header class="fixed top-0 inset-x-0 z-50 bg-surface-white/95 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 max-w-7xl mx-auto px-gutter flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-md shrink-0"><div class="flex items-center gap-space-sm"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1UeNqfHxSAZx7GUKXA5poUsySyyiUC8fXQrVsHV7MvrP165UN6RNA1nTa2WqVa6GOog7bUGOf9nEENeMVwIGdf-lxZ4AGoIVoPDgs151aISJAtwL1AZZO0lOrOIvhUXm3ex38hFlCBBgvrOjeC_9TJrA2KN8tlSC77rggLowERp3zc7QMlGbad7Y1K1b7Nxusbu2HxM5eyjH7gjruCYcAJ2A2fZ1TuiU-nEMvaRSlnxCBKi6BQm24UEY6piH-txF4yY8fBHUNh7"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm tracking-tight text-on-surface leading-none">KOLLEKTA</span><span class="font-label-eyebrow text-label-eyebrow text-secondary uppercase leading-none mt-space-xs">B2B MEDIA SUITE</span></div></div></div><nav class="hidden md:flex items-center gap-space-lg h-full" data-active-classes="text-primary font-label-button border-b-2 border-primary"><a class="inline-flex items-center h-full px-space-xs text-on-surface-variant font-body-default text-body-default hover:text-on-surface transition-colors" data-path="collections" href="#">Συλλογές</a><a aria-current="page" class="inline-flex items-center h-full px-space-xs transition-colors text-primary font-label-button border-b-2 border-primary" data-path="clients" href="#">Πελάτες</a><a class="inline-flex items-center h-full px-space-xs text-on-surface-variant font-body-default text-body-default hover:text-on-surface transition-colors" data-path="messages" href="#">Μηνύματα</a><a class="inline-flex items-center h-full px-space-xs text-on-surface-variant font-body-default text-body-default hover:text-on-surface transition-colors" data-path="storage" href="#">Χώρος</a><div class="inline-flex items-center gap-space-xs h-full"><a class="inline-flex items-center h-full px-space-xs text-on-surface-variant font-body-default text-body-default hover:text-on-surface transition-colors" data-path="administrators" href="#">Διαχειριστές</a><span class="bg-secondary-container text-on-secondary-fixed-variant font-label-tag text-label-tag px-space-xs py-0.5 rounded-full">Superadmin</span></div></nav><div class="flex items-center gap-space-sm shrink-0"><button class="inline-flex items-center gap-space-xs px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface font-label-button text-label-button transition-colors" type="button"><span class="material-symbols-outlined text-body-editorial">key</span><span>Κωδικός</span></button><button class="inline-flex items-center gap-space-xs px-space-sm py-1.5 rounded-lg text-error hover:bg-error-container hover:text-on-error-container font-label-button text-label-button transition-colors" type="button"><span class="material-symbols-outlined text-body-editorial">logout</span><span>Αποσύνδεση</span></button></div></div><div class="bg-status-positive-container text-status-positive py-space-xs shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="max-w-7xl mx-auto px-gutter flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-body-editorial">cloud_queue</span><span class="font-body-default text-body-default">Χώρος: <strong>85% σε χρήση</strong> — αρχειοθετήστε παλιές συλλογές για βέλτιστη απόδοση.</span></div><button aria-label="Dismiss" class="p-space-xs rounded-full hover:bg-surface-white/40 text-status-positive transition-colors" type="button"><span class="material-symbols-outlined text-body-default">close</span></button></div></div></header><main class="w-full pt-24 max-w-7xl mx-auto px-gutter flex-1"><div class="flex flex-col w-full pb-space-xl">
+<!-- Page Header & Macro Toolbar -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-md mb-space-lg">
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs mb-1">
+<span class="font-label-eyebrow text-label-eyebrow text-secondary tracking-widest uppercase">CRM &amp; SHOWROOM ACCESS</span>
+<span class="inline-block w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Πελάτες</h1>
+<p class="font-body-default text-body-default text-secondary mt-0.5">
+        Διαχείριση πελατολογίου, αδειών πρόσβασης και αποστολή κωδικών
+      </p>
+</div>
+<!-- Right Actions Toolbar -->
+<div class="flex items-center flex-wrap gap-space-sm">
+<button class="inline-flex items-center gap-space-xs h-9 px-space-md rounded bg-surface-white hover:bg-canvas-mist text-body-ink font-label-button text-label-button shadow-sm transition-all duration-150" type="button">
+<span class="material-symbols-outlined text-[18px] text-secondary">file_download</span>
+<span>Δείγμα Excel</span>
+</button>
+<button class="inline-flex items-center gap-space-xs h-9 px-space-md rounded bg-surface-white hover:bg-canvas-mist text-body-ink font-label-button text-label-button shadow-sm transition-all duration-150" type="button">
+<span class="material-symbols-outlined text-[18px] text-secondary">upload_file</span>
+<span>Εισαγωγή Excel</span>
+</button>
+<button class="inline-flex items-center gap-space-xs h-9 px-space-md rounded bg-primary-container hover:opacity-90 text-on-primary font-label-button text-label-button shadow-sm transition-all duration-150" id="toggle-form-btn" type="button">
+<span class="material-symbols-outlined text-[18px]">person_add</span>
+<span>+ Νέος πελάτης</span>
+</button>
+</div>
+</div>
+<!-- Realtime KPI Snapshot Bar -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-space-md mb-space-lg">
+<div class="bg-surface-white p-space-md rounded shadow-sm flex items-center justify-between">
+<div>
+<div class="font-label-eyebrow text-label-eyebrow uppercase text-secondary">Συνολικοι Πελατες</div>
+<div class="font-headline-md text-headline-md text-on-surface mt-1">1,428</div>
+<div class="font-body-micro text-body-micro text-secondary mt-0.5">+14 νέοι αυτόν τον μήνα</div>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-headline-sm">groups</span>
+</div>
+</div>
+<div class="bg-surface-white p-space-md rounded shadow-sm flex items-center justify-between">
+<div>
+<div class="font-label-eyebrow text-label-eyebrow uppercase text-secondary">Ενεργα Credentials</div>
+<div class="font-headline-md text-headline-md text-on-surface mt-1">1,192</div>
+<div class="font-body-micro text-body-micro text-status-positive font-medium mt-0.5">83.4% ενεργό ποσοστό</div>
+</div>
+<div class="w-10 h-10 rounded-full bg-status-positive-container/40 flex items-center justify-center text-status-positive">
+<span class="material-symbols-outlined text-headline-sm">vpn_key</span>
+</div>
+</div>
+<div class="bg-surface-white p-space-md rounded shadow-sm flex items-center justify-between">
+<div>
+<div class="font-label-eyebrow text-label-eyebrow uppercase text-secondary">Παραδοσεις SMS/Viber</div>
+<div class="font-headline-md text-headline-md text-on-surface mt-1">99.1%</div>
+<div class="font-body-micro text-body-micro text-secondary mt-0.5">2 αναπάντητα bounces</div>
+</div>
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-fixed-variant">
+<span class="material-symbols-outlined text-headline-sm">mark_email_read</span>
+</div>
+</div>
+<div class="bg-surface-white p-space-md rounded shadow-sm flex items-center justify-between">
+<div>
+<div class="font-label-eyebrow text-label-eyebrow uppercase text-secondary">B2B Pro+ Tier</div>
+<div class="font-headline-md text-headline-md text-on-surface mt-1">340</div>
+<div class="font-body-micro text-body-micro text-primary font-medium mt-0.5">VIP &amp; Exclusive Wholesalers</div>
+</div>
+<div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center text-on-primary-fixed-variant">
+<span class="material-symbols-outlined text-headline-sm">workspace_premium</span>
+</div>
+</div>
+</div>
+<!-- Expanded 'Νέος πελάτης' Creation Panel -->
+<div class="bg-surface-white rounded shadow-md p-space-lg mb-space-lg transition-all duration-300" id="new-client-drawer">
+<div class="flex items-center justify-between pb-space-sm mb-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 rounded bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">badge</span>
+</div>
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Εγγραφή &amp; Έκδοση Πρόσβασης</h2>
+<p class="font-body-micro text-body-micro text-secondary">Άμεση δημιουργία προφίλ και κωδικού εισόδου στην πλατφόρμα δειγματισμού.</p>
+</div>
+</div>
+<span class="font-label-tag text-label-tag uppercase tracking-wider px-2 py-0.5 rounded bg-primary-fixed text-on-primary-fixed-variant">
+        Automated Dispatch
+      </span>
+</div>
+<form class="space-y-space-md" onsubmit="event.preventDefault(); document.getElementById('success-callout').classList.remove('hidden');">
+<!-- 3-Column Field Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-md">
+<!-- Field 1: Name -->
+<div class="flex flex-col gap-1">
+<label class="font-label-button text-label-button text-body-ink">Όνομα πελάτη / Επωνυμία *</label>
+<div class="relative">
+<input class="w-full h-9 px-3 bg-surface-white rounded font-body-default text-body-default text-on-surface shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-container" placeholder="π.χ. Maison Blanche" required="" type="text" value="Boutique Anemone"/>
+</div>
+</div>
+<!-- Field 2: Mobile -->
+<div class="flex flex-col gap-1">
+<label class="font-label-button text-label-button text-body-ink">Κινητό τηλέφωνο *</label>
+<div class="relative">
+<input class="w-full h-9 px-3 bg-surface-white rounded font-body-default text-body-default text-on-surface tracking-wide shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-container" placeholder="69..." required="" type="tel" value="6984210984"/>
+<span class="absolute right-3 top-2 text-secondary font-label-tag text-label-tag">GR +30</span>
+</div>
+</div>
+<!-- Field 3: Email -->
+<div class="flex flex-col gap-1">
+<label class="font-label-button text-label-button text-body-ink">Email</label>
+<input class="w-full h-9 px-3 bg-surface-white rounded font-body-default text-body-default text-on-surface shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-container" placeholder="orders@brand.com" type="email" value="contact@anemone-boutique.gr"/>
+</div>
+<!-- Field 4: ERP Code -->
+<div class="flex flex-col gap-1">
+<label class="font-label-button text-label-button text-body-ink">ERP κωδικός</label>
+<input class="w-full h-9 px-3 bg-surface-white rounded font-body-default text-body-default text-on-surface uppercase tracking-wider font-mono shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-container" placeholder="π.χ. SAP-88301" type="text" value="ERP-GR-4991"/>
+</div>
+<!-- Field 5: Access Level -->
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<label class="font-label-button text-label-button text-body-ink">Πρόσβαση</label>
+<span class="font-label-tag text-label-tag px-1.5 py-0.5 rounded bg-surface-container-high text-primary font-bold">Pro+</span>
+</div>
+<div class="relative">
+<select class="w-full h-9 px-3 bg-surface-white rounded font-body-default text-body-default text-on-surface shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-container cursor-pointer appearance-none">
+<option selected="">Πλήρης (Lookbook, Τιμές, Παραγγελία)</option>
+<option>Περιήγηση + Λήψη υλικού</option>
+<option>Μόνο παραγγελία (B2B Sheet)</option>
+</select>
+<span class="material-symbols-outlined text-[18px] text-secondary absolute right-2.5 top-2.5 pointer-events-none">expand_more</span>
+</div>
+</div>
+<!-- Field 6: Dispatch Channel -->
+<div class="flex flex-col gap-1">
+<label class="font-label-button text-label-button text-body-ink">Κανάλι αποστολής</label>
+<div class="relative">
+<select class="w-full h-9 px-3 bg-surface-white rounded font-body-default text-body-default text-on-surface shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-container cursor-pointer appearance-none">
+<option>SMS (Άμεση ειδοποίηση)</option>
+<option selected="">Viber</option>
+<option>WhatsApp</option>
+<option>Email</option>
+<option>Αυτόματο (Fallback)</option>
+</select>
+<span class="material-symbols-outlined text-[18px] text-secondary absolute right-2.5 top-2.5 pointer-events-none">expand_more</span>
+</div>
+</div>
+</div>
+<!-- Action & Options Row -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-md pt-space-xs">
+<label class="flex items-center gap-2 cursor-pointer select-none">
+<input checked="" class="w-4 h-4 rounded text-primary-container focus:ring-0 focus:ring-offset-0 cursor-pointer" type="checkbox"/>
+<span class="font-body-default text-body-default text-on-surface">Αυτόματη δημιουργία και άμεση αποστολή μοναδικού κωδικού (OTP Token)</span>
+</label>
+<div class="flex items-center gap-space-sm shrink-0">
+<button class="h-9 px-space-md rounded bg-surface-white hover:bg-canvas-mist text-body-ink font-label-button text-label-button shadow-sm transition-colors" onclick="document.getElementById('new-client-drawer').classList.add('hidden')" type="button">
+            Ακύρωση
+          </button>
+<button class="h-9 px-space-lg rounded bg-primary-container hover:opacity-90 text-on-primary font-label-button text-label-button shadow-sm transition-all" type="submit">
+            Αποθήκευση &amp; Έκδοση
+          </button>
+</div>
+</div>
+</form>
+<!-- Result State Badge Callout -->
+<div class="mt-space-md p-space-md rounded bg-surface-container flex flex-col md:flex-row md:items-center justify-between gap-space-md shadow-sm" id="success-callout">
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="w-8 h-8 rounded-full bg-surface-white flex items-center justify-center text-status-positive shrink-0">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+</span>
+<div class="min-w-0">
+<div class="flex items-center gap-space-xs flex-wrap">
+<span class="font-label-button text-label-button text-on-surface">Δημιουργήθηκε:</span>
+<span class="font-headline-sm text-[15px] font-bold text-on-surface">Boutique Anemone</span>
+<span class="text-secondary font-body-micro">·</span>
+<span class="font-label-button text-label-button text-secondary">Κωδικός πρόσβασης:</span>
+<span class="px-2 py-0.5 rounded bg-surface-white text-primary font-mono text-title-md font-bold tracking-wider">KLK-8821</span>
+</div>
+<p class="font-body-micro text-body-micro text-secondary mt-0.5">
+            Πρόσβαση Lookbook AW25 &amp; SS26 ενεργοποιήθηκε επιτυχώς.
+          </p>
+</div>
+</div>
+<div class="flex items-center gap-space-sm shrink-0">
+<span class="inline-flex items-center gap-1 font-label-tag text-label-tag px-2.5 py-1 rounded-full bg-status-positive-container text-status-positive font-bold">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+          Στάλθηκε με SMS ✓
+        </span>
+<button class="inline-flex items-center gap-1 h-8 px-space-sm rounded bg-surface-white hover:bg-canvas-mist text-body-ink font-label-button text-label-button shadow-sm transition-all" onclick="navigator.clipboard &amp;&amp; navigator.clipboard.writeText('KLK-8821')" type="button">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+<span>Αντιγραφή</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Search & Filter Controls -->
+<div class="bg-surface-white p-space-sm rounded shadow-sm mb-space-md flex flex-col md:flex-row items-stretch md:items-center justify-between gap-space-sm">
+<!-- Search Bar -->
+<div class="relative flex-1">
+<span class="material-symbols-outlined absolute left-3 top-2 text-secondary text-[20px]">search</span>
+<input class="w-full h-9 pl-9 pr-4 bg-canvas-mist/60 rounded font-body-default text-body-default text-on-surface placeholder:text-secondary focus:outline-none focus:bg-surface-white focus:ring-2 focus:ring-primary-container transition-all" placeholder="Αναζήτηση με όνομα, τηλέφωνο, email ή ERP code..." type="text"/>
+</div>
+<!-- Filter Dropdowns -->
+<div class="flex items-center gap-space-sm shrink-0 flex-wrap">
+<!-- Tag Filter -->
+<div class="relative">
+<select class="h-9 pl-3 pr-8 bg-canvas-mist/60 rounded font-body-default text-body-default text-on-surface cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-container appearance-none">
+<option>Όλες οι ετικέτες (Tags)</option>
+<option>VIP Showroom</option>
+<option>Export / Global</option>
+<option>Cruises &amp; Resort</option>
+<option>Pending KYC</option>
+</select>
+<span class="material-symbols-outlined text-[18px] text-secondary absolute right-2 top-2.5 pointer-events-none">filter_list</span>
+</div>
+<!-- Status Filter -->
+<div class="relative">
+<select class="h-9 pl-3 pr-8 bg-canvas-mist/60 rounded font-body-default text-body-default text-on-surface cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-container appearance-none">
+<option>Όλες οι καταστάσεις</option>
+<option selected="">Ενεργός</option>
+<option>Ανενεργός / Σε αναμονή</option>
+<option>Bounced / Σφάλμα</option>
+</select>
+<span class="material-symbols-outlined text-[18px] text-secondary absolute right-2 top-2.5 pointer-events-none">expand_more</span>
+</div>
+<!-- Quick Reset Button -->
+<button class="w-9 h-9 flex items-center justify-center rounded bg-canvas-mist/60 hover:bg-canvas-mist text-secondary transition-colors" title="Επαναφορά φίλτρων" type="button">
+<span class="material-symbols-outlined text-[18px]">refresh</span>
+</button>
+</div>
+</div>
+<!-- Floating Active Bulk Actions Toolbar (3 Rows Selected) -->
+<div class="sticky top-20 z-40 bg-inverse-surface text-inverse-on-surface rounded shadow-xl px-space-md py-2.5 mb-space-sm flex flex-col md:flex-row md:items-center justify-between gap-space-sm animate-in fade-in slide-in-from-top-2 duration-200">
+<div class="flex items-center gap-space-sm">
+<span class="w-2.5 h-2.5 rounded-full bg-primary-container animate-pulse"></span>
+<span class="font-headline-sm text-[14px] font-semibold tracking-wide">3 επιλεγμένοι πελάτες</span>
+<span class="text-secondary font-body-micro hidden sm:inline">| Μαζικές ενέργειες συνόλου</span>
+</div>
+<div class="flex items-center gap-space-xs flex-wrap">
+<button class="inline-flex items-center gap-1 h-7 px-space-sm rounded bg-surface-white/10 hover:bg-surface-white/20 text-inverse-on-surface font-label-button text-label-button transition-all" type="button">
+<span class="material-symbols-outlined text-[15px]">send</span>
+<span>Επαναποστολή κωδικού</span>
+</button>
+<button class="inline-flex items-center gap-1 h-7 px-space-sm rounded bg-surface-white/10 hover:bg-surface-white/20 text-inverse-on-surface font-label-button text-label-button transition-all" type="button">
+<span class="material-symbols-outlined text-[15px]">pause_circle</span>
+<span>Απενεργοποίηση</span>
+</button>
+<button class="inline-flex items-center gap-1 h-7 px-space-sm rounded bg-surface-white/10 hover:bg-surface-white/20 text-inverse-on-surface font-label-button text-label-button transition-all" type="button">
+<span class="material-symbols-outlined text-[15px]">label</span>
+<span>Tags</span>
+</button>
+<button class="inline-flex items-center gap-1 h-7 px-space-sm rounded bg-error/20 hover:bg-error/30 text-error-container font-label-button text-label-button transition-all" type="button">
+<span class="material-symbols-outlined text-[15px]">delete_outline</span>
+<span>Διαγραφή</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-white/15 text-secondary hover:text-inverse-on-surface ml-1 transition-colors" title="Αποεπιλογή" type="button">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+</div>
+<!-- Wholesale Customer Roster Table Card -->
+<div class="bg-surface-white rounded shadow-sm overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left font-body-default text-body-default border-collapse">
+<!-- Table Header -->
+<thead class="bg-canvas-mist/80 text-secondary uppercase font-label-tag text-label-tag tracking-wider select-none">
+<tr>
+<th class="w-10 px-4 py-3 text-center" scope="col">
+<input checked="" class="w-4 h-4 rounded text-primary-container focus:ring-0 cursor-pointer" type="checkbox"/>
+</th>
+<th class="px-4 py-3" scope="col">Όνομα / Επωνυμία</th>
+<th class="px-4 py-3" scope="col">Τηλέφωνο</th>
+<th class="px-4 py-3" scope="col">Email</th>
+<th class="px-4 py-3" scope="col">Κατάσταση</th>
+<th class="px-4 py-3" scope="col">Πρόσβαση</th>
+<th class="px-4 py-3" scope="col">Κανάλι</th>
+<th class="px-4 py-3" scope="col">Tags</th>
+<th class="w-16 px-4 py-3 text-right" scope="col">Ενέργειες</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-hairline text-body-ink">
+<!-- Row 1: Selected & VIP -->
+<tr class="bg-primary-fixed/20 hover:bg-primary-fixed/30 transition-colors">
+<td class="px-4 py-3.5 text-center">
+<input checked="" class="w-4 h-4 rounded text-primary-container focus:ring-0 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-4 py-3.5">
+<div class="flex items-center gap-space-sm">
+<div class="w-7 h-7 rounded-full bg-primary-fixed text-on-primary-fixed-variant flex items-center justify-center font-bold text-[11px] shrink-0">
+                  AN
+                </div>
+<div class="min-w-0">
+<div class="font-title-md text-title-md font-semibold text-on-surface truncate">Boutique Anemone</div>
+<div class="font-body-micro text-body-micro text-secondary font-mono">ERP-GR-4991 · Κολωνάκι</div>
+</div>
+</div>
+</td>
+<td class="px-4 py-3.5 font-mono text-[12px] text-on-surface tracking-wide">
+              698 421 0984
+            </td>
+<td class="px-4 py-3.5 text-secondary truncate max-w-[180px]">
+              contact@anemone-boutique.gr
+            </td>
+<td class="px-4 py-3.5">
+<span class="inline-flex items-center gap-1 font-label-tag text-label-tag px-2 py-0.5 rounded-full bg-status-positive-container text-status-positive font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-status-positive"></span>
+                Ενεργός
+              </span>
+</td>
+<td class="px-4 py-3.5">
+<span class="inline-flex items-center gap-1 font-label-tag text-label-tag px-2 py-0.5 rounded bg-primary-fixed text-on-primary-fixed-variant font-bold">
+<span class="material-symbols-outlined text-[13px]">verified</span>
+                Pro+ Full
+              </span>
+</td>
+<td class="px-4 py-3.5">
+<span class="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded bg-[#7360F2]/15 text-[#593fd1]">
+<span class="material-symbols-outlined text-[14px]">chat</span>
+                Viber
+              </span>
+</td>
+<td class="px-4 py-3.5">
+<div class="flex items-center gap-1 flex-wrap">
+<span class="font-label-tag text-label-tag px-2 py-0.5 rounded bg-surface-container text-body-ink">VIP Showroom</span>
+<span class="font-label-tag text-label-tag px-1.5 py-0.5 rounded bg-surface-container text-secondary">AW25</span>
+</div>
+</td>
+<td class="px-4 py-3.5 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-container text-secondary hover:text-primary transition-colors" title="Αποστολή κωδικού" type="button">
+<span class="material-symbols-outlined text-[18px]">key</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-container text-secondary transition-colors" title="Περισσότερα" type="button">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2: Selected, Export VIP -->
+<tr class="bg-primary-fixed/20 hover:bg-primary-fixed/30 transition-colors">
+<td class="px-4 py-3.5 text-center">
+<input checked="" class="w-4 h-4 rounded text-primary-container focus:ring-0 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-4 py-3.5">
+<div class="flex items-center gap-space-sm">
+<div class="w-7 h-7 rounded-full bg-secondary-container text-on-secondary-fixed-variant flex items-center justify-center font-bold text-[11px] shrink-0">
+                  NK
+                </div>
+<div class="min-w-0">
+<div class="font-title-md text-title-md font-semibold text-on-surface truncate">Nammos Kiosk Luxury</div>
+<div class="font-body-micro text-body-micro text-secondary font-mono">ERP-CY-1008 · Μύκονος</div>
+</div>
+</div>
+</td>
+<td class="px-4 py-3.5 font-mono text-[12px] text-on-surface tracking-wide">
+              694 510 3390
+            </td>
+<td class="px-4 py-3.5 text-secondary truncate max-w-[180px]">
+              buying@nammos-luxury.com
+            </td>
+<td class="px-4 py-3.5">
+<span class="inline-flex items-center gap-1 font-label-tag text-label-tag px-2 py-0.5 rounded-full bg-status-positive-container text-status-positive font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-status-positive"></span>
+                Ενεργός
+              </span>
+</td>
+<td class="px-4 py-3.5">
+<span class="inline-flex items-center gap-1 font-label-tag text-label-tag px-2 py-0.5 rounded bg-primary-fixed text-on-primary-fixed-variant font-bold">
+<span class="material-symbols-outlined text-[13px]">verified</span>
+                Pro+ Full
+              </span>
+</td>
+<td class="px-4 py-3.5">
+<span class="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded bg-[#25D366]/15 text-[#128C7E]">
+<span class="material-symbols-outlined text-[14px]">phone_iphone</span>
+                WhatsApp
+              </span>
+</td>
+<td class="px-4 py-3.5">
+<div class="flex items-center gap-1 flex-wrap">
+<span class="font-label-tag text-label-tag px-2 py-0.5 rounded bg-surface-container text-body-ink">Cruises &amp; Resort</span>
+<span class="font-label-tag text-label-tag px-2 py-0.5 rounded bg-status-positive-container/50 text-status-positive font-bold">Tier 1</span>
+</div>
+</td>
+<td class="px-4 py-3.5 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-container text-secondary hover:text-primary transition-colors" title="Αποστολή κωδικού" type="button">
+<span class="material-symbols-outlined text-[18px]">key</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-container text-secondary transition-colors" title="Περισσότερα" type="button">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3: Selected, SMS Channel -->
+<tr class="bg-primary-fixed/20 hover:bg-primary-fixed/30 transition-colors">
+<td class="px-4 py-3.5 text-center">
+<input checked="" class="w-4 h-4 rounded text-primary-container focus:ring-0 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-4 py-3.5">
+<div class="flex items-center gap-space-sm">
+<div class="w-7 h-7 rounded-full bg-surface-container text-on-surface flex items-center justify-center font-bold text-[11px] shrink-0">
+                  SL
+                </div>
+<div class="min-w-0">
+<div class="font-title-md text-title-md font-semibold text-on-surface truncate">Sotiris Lambrou Studio</div>
+<div class="font-body-micro text-body-micro text-secondary font-mono">ERP-GR-8812 · Θεσσαλονίκη</div>
+</div>
+</div>
+</td>
+<td class="px-4 py-3.5 font-mono text-[12px] text-on-surface tracking-wide">
+              697 290 8441
+            </td>
+<td class="px-4 py-3.5 text-secondary truncate max-w-[180px]">
+              lambrou.concept@thess.gr
+            </td>
+<td class="px-4 py-3.5">
+<span class="inline-flex items-center gap-1 font-label-tag text-label-tag px-2 py-0.5 rounded-full bg-status-positive-container text-status-positive font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-status-positive"></span>
+                Ενεργός
+              </span>
+</td>
+<td class="px-4 py-3.5">
+<span class="inline-flex items-center gap-1 font-label-tag text-label-tag px-2 py-0.5 rounded bg-surface-container-high text-body-ink">
+                Περιήγηση+Λήψη
+              </span>
+</td>
+<td class="px-4 py-3.5">
+<span class="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded bg-surface-container text-body-ink">
+<span class="material-symbols-outlined text-[14px]">sms</span>
+                SMS
+              </span>
+</td>
+<td class="px-4 py-3.5">
+<div class="flex items-center gap-1">
+<span class="font-label-tag text-label-tag px-2 py-0.5 rounded bg-surface-container text-body-ink">B2B Core</span>
+</div>
+</td>
+<td class="px-4 py-3.5 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-container text-secondary hover:text-primary transition-colors" title="Αποστολή κωδικού" type="button">
+<span class="material-symbols-outlined text-[18px]">key</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-container text-secondary transition-colors" title="Περισσότερα" type="button">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4: Unchecked, Warning Email Bounce State -->
+<tr class="hover:bg-canvas-mist transition-colors">
+<td class="px-4 py-3.5 text-center">
+<input class="w-4 h-4 rounded text-primary-container focus:ring-0 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-4 py-3.5">
+<div class="flex items-center gap-space-sm">
+<div class="w-7 h-7 rounded-full bg-error-container text-on-error-container flex items-center justify-center font-bold text-[11px] shrink-0">
+                  MG
+                </div>
+<div class="min-w-0">
+<div class="font-title-md text-title-md font-semibold text-on-surface truncate">Maison Gray Concept</div>
+<div class="font-body-micro text-body-micro text-secondary font-mono">ERP-FR-9022 · Παρίσι / Αθήνα</div>
+</div>
+</div>
+</td>
+<td class="px-4 py-3.5 font-mono text-[12px] text-on-surface tracking-wide">
+              693 002 9114
+            </td>
+<td class="px-4 py-3.5">
+<div class="flex items-center gap-1 text-status-danger">
+<span class="w-2 h-2 rounded-full bg-status-danger"></span>
+<span class="font-body-micro truncate max-w-[170px]" title="Mailbox delivery failure: info@maisongray.fr">info@maisongray.fr</span>
+<span class="material-symbols-outlined text-[15px]" title="Bounced: 550 Mailbox Unavailable">error</span>
+</div>
+</td>
+<td class="px-4 py-3.5">
+<span class="inline-flex items-center gap-1 font-label-tag text-label-tag px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-semibold">
+                Bounced
+              </span>
+</td>
+<td class="px-4 py-3.5">
+<span class="inline-flex items-center gap-1 font-label-tag text-label-tag px-2 py-0.5 rounded bg-surface-container-high text-body-ink">
+                Μόνο Παραγγελία
+              </span>
+</td>
+<td class="px-4 py-3.5">
+<span class="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded bg-surface-container text-body-ink">
+<span class="material-symbols-outlined text-[14px]">mail</span>
+                Email
+              </span>
+</td>
+<td class="px-4 py-3.5">
+<div class="flex items-center gap-1">
+<span class="font-label-tag text-label-tag px-2 py-0.5 rounded bg-error-container/40 text-status-danger font-semibold">Needs Audit</span>
+</div>
+</td>
+<td class="px-4 py-3.5 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-container text-status-danger transition-colors" title="Επιδιόρθωση στοιχείων" type="button">
+<span class="material-symbols-outlined text-[18px]">build</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-container text-secondary transition-colors" title="Περισσότερα" type="button">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 5: Unchecked, Inactive / Pending KYC -->
+<tr class="hover:bg-canvas-mist transition-colors">
+<td class="px-4 py-3.5 text-center">
+<input class="w-4 h-4 rounded text-primary-container focus:ring-0 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-4 py-3.5">
+<div class="flex items-center gap-space-sm">
+<div class="w-7 h-7 rounded-full bg-surface-container text-secondary flex items-center justify-center font-bold text-[11px] shrink-0">
+                  EA
+                </div>
+<div class="min-w-0">
+<div class="font-title-md text-title-md font-semibold text-on-surface truncate">Eleni Archontaki Resort</div>
+<div class="font-body-micro text-body-micro text-secondary font-mono">ERP-GR-2244 · Χανιά</div>
+</div>
+</div>
+</td>
+<td class="px-4 py-3.5 font-mono text-[12px] text-on-surface tracking-wide">
+              698 111 8802
+            </td>
+<td class="px-4 py-3.5 text-secondary truncate max-w-[180px]">
+              wholesale@archontaki-resort.gr
+            </td>
+<td class="px-4 py-3.5">
+<span class="inline-flex items-center gap-1 font-label-tag text-label-tag px-2 py-0.5 rounded-full bg-surface-container text-secondary font-semibold">
+                Ανενεργός
+              </span>
+</td>
+<td class="px-4 py-3.5">
+<span class="inline-flex items-center gap-1 font-label-tag text-label-tag px-2 py-0.5 rounded bg-surface-container text-secondary">
+                Σε εκκρεμότητα
+              </span>
+</td>
+<td class="px-4 py-3.5">
+<span class="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded bg-surface-container text-body-ink">
+<span class="material-symbols-outlined text-[14px]">auto_mode</span>
+                Αυτόματο
+              </span>
+</td>
+<td class="px-4 py-3.5">
+<div class="flex items-center gap-1">
+<span class="font-label-tag text-label-tag px-2 py-0.5 rounded bg-surface-container-high text-body-ink">Pending KYC</span>
+</div>
+</td>
+<td class="px-4 py-3.5 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-container text-secondary hover:text-primary transition-colors" title="Ενεργοποίηση" type="button">
+<span class="material-symbols-outlined text-[18px]">toggle_off</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-container text-secondary transition-colors" title="Περισσότερα" type="button">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 6: Export Global Wholesale -->
+<tr class="hover:bg-canvas-mist transition-colors">
+<td class="px-4 py-3.5 text-center">
+<input class="w-4 h-4 rounded text-primary-container focus:ring-0 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-4 py-3.5">
+<div class="flex items-center gap-space-sm">
+<div class="w-7 h-7 rounded-full bg-primary-fixed text-on-primary-fixed-variant flex items-center justify-center font-bold text-[11px] shrink-0">
+                  KS
+                </div>
+<div class="min-w-0">
+<div class="font-title-md text-title-md font-semibold text-on-surface truncate">Kifisia Select Showroom</div>
+<div class="font-body-micro text-body-micro text-secondary font-mono">ERP-GR-1109 · Κηφισιά</div>
+</div>
+</div>
+</td>
+<td class="px-4 py-3.5 font-mono text-[12px] text-on-surface tracking-wide">
+              694 883 4519
+            </td>
+<td class="px-4 py-3.5 text-secondary truncate max-w-[180px]">
+              orders@kifisia-select.com
+            </td>
+<td class="px-4 py-3.5">
+<span class="inline-flex items-center gap-1 font-label-tag text-label-tag px-2 py-0.5 rounded-full bg-status-positive-container text-status-positive font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-status-positive"></span>
+                Ενεργός
+              </span>
+</td>
+<td class="px-4 py-3.5">
+<span class="inline-flex items-center gap-1 font-label-tag text-label-tag px-2 py-0.5 rounded bg-primary-fixed text-on-primary-fixed-variant font-bold">
+<span class="material-symbols-outlined text-[13px]">verified</span>
+                Pro+ Full
+              </span>
+</td>
+<td class="px-4 py-3.5">
+<span class="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded bg-[#7360F2]/15 text-[#593fd1]">
+<span class="material-symbols-outlined text-[14px]">chat</span>
+                Viber
+              </span>
+</td>
+<td class="px-4 py-3.5">
+<div class="flex items-center gap-1 flex-wrap">
+<span class="font-label-tag text-label-tag px-2 py-0.5 rounded bg-surface-container text-body-ink">VIP Showroom</span>
+<span class="font-label-tag text-label-tag px-1.5 py-0.5 rounded bg-surface-container text-secondary">Pre-Order</span>
+</div>
+</td>
+<td class="px-4 py-3.5 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-container text-secondary hover:text-primary transition-colors" title="Αποστολή κωδικού" type="button">
+<span class="material-symbols-outlined text-[18px]">key</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-container text-secondary transition-colors" title="Περισσότερα" type="button">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 7: Milan Export Account -->
+<tr class="hover:bg-canvas-mist transition-colors">
+<td class="px-4 py-3.5 text-center">
+<input class="w-4 h-4 rounded text-primary-container focus:ring-0 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-4 py-3.5">
+<div class="flex items-center gap-space-sm">
+<div class="w-7 h-7 rounded-full bg-secondary-container text-on-secondary-fixed-variant flex items-center justify-center font-bold text-[11px] shrink-0">
+                  DL
+                </div>
+<div class="min-w-0">
+<div class="font-title-md text-title-md font-semibold text-on-surface truncate">Duomo Linea SpA</div>
+<div class="font-body-micro text-body-micro text-secondary font-mono">ERP-IT-4491 · Milano / Navigli</div>
+</div>
+</div>
+</td>
+<td class="px-4 py-3.5 font-mono text-[12px] text-on-surface tracking-wide">
+              +39 349 1982 400
+            </td>
+<td class="px-4 py-3.5 text-secondary truncate max-w-[180px]">
+              buyer.milan@duomolinea.it
+            </td>
+<td class="px-4 py-3.5">
+<span class="inline-flex items-center gap-1 font-label-tag text-label-tag px-2 py-0.5 rounded-full bg-status-positive-container text-status-positive font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-status-positive"></span>
+                Ενεργός
+              </span>
+</td>
+<td class="px-4 py-3.5">
+<span class="inline-flex items-center gap-1 font-label-tag text-label-tag px-2 py-0.5 rounded bg-primary-fixed text-on-primary-fixed-variant font-bold">
+<span class="material-symbols-outlined text-[13px]">verified</span>
+                Pro+ Full
+              </span>
+</td>
+<td class="px-4 py-3.5">
+<span class="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded bg-[#25D366]/15 text-[#128C7E]">
+<span class="material-symbols-outlined text-[14px]">phone_iphone</span>
+                WhatsApp
+              </span>
+</td>
+<td class="px-4 py-3.5">
+<div class="flex items-center gap-1 flex-wrap">
+<span class="font-label-tag text-label-tag px-2 py-0.5 rounded bg-surface-container text-body-ink">Export / Global</span>
+<span class="font-label-tag text-label-tag px-2 py-0.5 rounded bg-status-positive-container/50 text-status-positive font-bold">Exclusive</span>
+</div>
+</td>
+<td class="px-4 py-3.5 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-container text-secondary hover:text-primary transition-colors" title="Αποστολή κωδικού" type="button">
+<span class="material-symbols-outlined text-[18px]">key</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-container text-secondary transition-colors" title="Περισσότερα" type="button">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Pagination & Bulk Status Footer -->
+<div class="px-space-md py-3 bg-canvas-mist/40 flex flex-col sm:flex-row items-center justify-between gap-space-sm">
+<div class="font-body-micro text-body-micro text-secondary">
+        Εμφάνιση <span class="font-semibold text-on-surface">1 - 7</span> από <span class="font-semibold text-on-surface">1,428</span> πελάτες
+      </div>
+<div class="flex items-center gap-space-xs">
+<button class="h-8 px-2.5 rounded bg-surface-white text-secondary opacity-50 cursor-not-allowed font-label-button text-label-button shadow-sm" disabled="" type="button">
+          Προηγούμενο
+        </button>
+<button class="h-8 w-8 rounded bg-primary-container text-on-primary font-label-button text-label-button shadow-sm flex items-center justify-center" type="button">
+          1
+        </button>
+<button class="h-8 w-8 rounded bg-surface-white hover:bg-canvas-mist text-body-ink font-label-button text-label-button shadow-sm flex items-center justify-center" type="button">
+          2
+        </button>
+<button class="h-8 w-8 rounded bg-surface-white hover:bg-canvas-mist text-body-ink font-label-button text-label-button shadow-sm flex items-center justify-center" type="button">
+          3
+        </button>
+<span class="px-1 text-secondary font-mono text-[12px]">...</span>
+<button class="h-8 w-8 rounded bg-surface-white hover:bg-canvas-mist text-body-ink font-label-button text-label-button shadow-sm flex items-center justify-center" type="button">
+          48
+        </button>
+<button class="h-8 px-2.5 rounded bg-surface-white hover:bg-canvas-mist text-body-ink font-label-button text-label-button shadow-sm" type="button">
+          Επόμενο
+        </button>
+</div>
+</div>
+</div>
+</div>
+<script>
+  // Simple micro-interaction for drawer toggle
+  document.getElementById('toggle-form-btn')?.addEventListener('click', () => {
+    const drawer = document.getElementById('new-client-drawer');
+    if (drawer) {
+      drawer.classList.toggle('hidden');
+      if (!drawer.classList.contains('hidden')) {
+        drawer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  });
+</script></main><footer class="w-full bg-surface-white mt-space-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="max-w-7xl mx-auto px-gutter py-space-md flex flex-col md:flex-row items-center justify-between gap-space-sm text-secondary font-body-micro text-body-micro"><div>© 2025 Kollekta Media Suite. Studio Operations &amp; Luxury Showroom Merchandising.</div><div class="flex items-center gap-space-md"><span>Πολιτική Απορρήτου</span><span>Όροι Χρήσης</span><span>Τεκμηρίωση API</span></div></div></footer></body></html>

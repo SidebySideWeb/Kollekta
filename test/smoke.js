@@ -1,12 +1,15 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const net = require('net');
+const { spawn } = require('child_process');
 const sharp = require('sharp');
 const XLSX = require('xlsx');
 
 const BASE = process.env.SMOKE_BASE_URL || 'http://localhost:3000';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'test123';
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@localhost';
+const ROOT = path.join(__dirname, '..');
 let adminCookie = '';
 let sessionCookie = '';
 
@@ -14,6 +17,137 @@ function assert(cond, msg) {
   if (cond) { console.log(`PASS: ${msg}`); return true; }
   console.error(`FAIL: ${msg}`);
   return false;
+}
+
+function dirSizeBytes(rootDir) {
+  if (!fs.existsSync(rootDir)) return 0;
+  let total = 0;
+  const stack = [rootDir];
+  while (stack.length) {
+    const current = stack.pop();
+    for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+      const full = path.join(current, entry.name);
+      if (entry.isDirectory()) stack.push(full);
+      else if (entry.isFile()) total += fs.statSync(full).size;
+    }
+  }
+  return total;
+}
+
+function getFreePort() {
+  return new Promise((resolve, reject) => {
+    const server = net.createServer();
+    server.listen(0, '127.0.0.1', () => {
+      const { port } = server.address();
+      server.close((err) => (err ? reject(err) : resolve(port)));
+    });
+    server.on('error', reject);
+  });
+}
+
+async function waitForServer(base, timeoutMs = 25000) {
+  const started = Date.now();
+  let lastErr = null;
+  while (Date.now() - started < timeoutMs) {
+    try {
+      const res = await fetch(`${base}/api/branding`);
+      if (res.ok) return;
+      lastErr = new Error(`branding ${res.status}`);
+    } catch (err) {
+      lastErr = err;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 150));
+  }
+  throw new Error(`Temp server not ready at ${base}: ${lastErr && lastErr.message}`);
+}
+
+async function withTempServer(env, fn) {
+  const port = await getFreePort();
+  const child = spawn(process.execPath, [path.join(ROOT, 'server.js')], {
+    cwd: ROOT,
+    env: {
+      ...process.env,
+      PORT: String(port),
+      EMAIL_PROVIDER: 'console',
+      MESSAGING_PROVIDER: 'console',
+      RATE_LIMIT_DISABLED: 'true',
+      RETENTION_AUTO_PURGE: 'false',
+      ADMIN_PASSWORD,
+      ADMIN_EMAIL,
+      SESSION_COOKIE_SECRET: process.env.SESSION_COOKIE_SECRET || 'dev-secret-change-me',
+      ...env,
+    },
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+
+  let stderr = '';
+  child.stderr.on('data', (chunk) => { stderr += String(chunk); });
+  child.stdout.on('data', () => {});
+
+  const base = `http://127.0.0.1:${port}`;
+  try {
+    await waitForServer(base);
+    await fn(base);
+  } catch (err) {
+    if (stderr.trim()) console.error(stderr.trim());
+    throw err;
+  } finally {
+    if (!child.killed) {
+      child.kill('SIGTERM');
+      await new Promise((resolve) => setTimeout(resolve, 400));
+      if (!child.killed) child.kill('SIGKILL');
+    }
+  }
+}
+
+function clearConfigModules() {
+  for (const rel of [
+    '../config',
+    '../lib/retention',
+    '../lib/access',
+    '../lib/quota',
+  ]) {
+    try {
+      delete require.cache[require.resolve(rel)];
+    } catch {
+      // ignore
+    }
+  }
+}
+
+function withPlanConfig(plan, fn) {
+  const prevPlan = process.env.PLAN;
+  const prevRetention = process.env.DEFAULT_RETENTION_MONTHS;
+  const prevOverrides = {
+    FEATURE_PRODUCT_CODES: process.env.FEATURE_PRODUCT_CODES,
+    FEATURE_ORDER_FILTERING: process.env.FEATURE_ORDER_FILTERING,
+    FEATURE_TAGS: process.env.FEATURE_TAGS,
+    FEATURE_CUSTOM_SMTP: process.env.FEATURE_CUSTOM_SMTP,
+    FEATURE_RETENTION_OVERRIDE: process.env.FEATURE_RETENTION_OVERRIDE,
+  };
+
+  process.env.PLAN = plan;
+  delete process.env.DEFAULT_RETENTION_MONTHS;
+  for (const key of Object.keys(prevOverrides)) delete process.env[key];
+  clearConfigModules();
+
+  try {
+    return fn({
+      config: require('../config'),
+      retention: require('../lib/retention'),
+      access: require('../lib/access'),
+    });
+  } finally {
+    if (prevPlan === undefined) delete process.env.PLAN;
+    else process.env.PLAN = prevPlan;
+    if (prevRetention === undefined) delete process.env.DEFAULT_RETENTION_MONTHS;
+    else process.env.DEFAULT_RETENTION_MONTHS = prevRetention;
+    for (const [key, value] of Object.entries(prevOverrides)) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+    clearConfigModules();
+  }
 }
 
 async function adminLogin(email = ADMIN_EMAIL, password = ADMIN_PASSWORD) {
@@ -471,6 +605,179 @@ async function main() {
     const { getDiskUsage } = require('../lib/storage');
     const disk = getDiskUsage();
     fail(disk.totalBytes > 0 && disk.usedPercent >= 0 && disk.usedPercent <= 100, 'getDiskUsage returns plausible numbers');
+
+    // --- Quota (temp server with tiny QUOTA_GB) ---
+    const uploadsRootForQuota = path.join(ROOT, 'uploads');
+    await withTempServer({ QUOTA_GB: '0.000001', PLAN: 'pro' }, async (quotaBase) => {
+      const beforeBytes = dirSizeBytes(uploadsRootForQuota);
+      const quotaCol = await fetch(`${quotaBase}/api/admin/collections`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Cookie: adminCookie },
+        body: JSON.stringify({ name: 'Quota Reject' }),
+      }).then((r) => r.json());
+
+      const oversized = path.join(tmp, 'quota-over.jpg');
+      await sharp({
+        create: { width: 1200, height: 1600, channels: 3, background: '#334455' },
+      }).jpeg({ quality: 90 }).toFile(oversized);
+
+      const fd = new FormData();
+      fd.append('images', new Blob([fs.readFileSync(oversized)]), 'quota-over.jpg');
+      const overRes = await fetch(`${quotaBase}/api/admin/collections/${quotaCol.id}/images`, {
+        method: 'POST',
+        headers: { Cookie: adminCookie },
+        body: fd,
+      });
+      const overBody = await overRes.json().catch(() => ({}));
+      fail(overRes.status === 507, 'uploading beyond QUOTA_GB returns 507');
+      fail(
+        typeof overBody.error === 'string' && /χώρος|Χρησιμοποιούνται/i.test(overBody.error),
+        'quota 507 returns Greek space message'
+      );
+
+      const afterBytes = dirSizeBytes(uploadsRootForQuota);
+      fail(afterBytes === beforeBytes, 'rejected quota upload does not grow uploads/');
+
+      const storage = await fetch(`${quotaBase}/api/admin/storage`, {
+        headers: { Cookie: adminCookie },
+      }).then((r) => r.json());
+      const quota = storage.quota || {};
+      const expectedPct = quota.quotaBytes > 0 ? (quota.usedBytes / quota.quotaBytes) * 100 : 0;
+      fail(
+        Number.isFinite(quota.percentUsed)
+          && Math.abs(quota.percentUsed - expectedPct) < 0.01,
+        'GET /api/admin/storage reports correct percentUsed'
+      );
+    });
+
+    // --- Feature flags: PLAN=basic ---
+    await withTempServer({ PLAN: 'basic' }, async (basicBase) => {
+      const mapFdBasic = new FormData();
+      mapFdBasic.append('mapping', new Blob([fs.readFileSync(mappingPath)]), 'mapping.xlsx');
+      const mapBasic = await fetch(`${basicBase}/api/admin/collections/${colB.id}/mapping`, {
+        method: 'POST',
+        headers: { Cookie: adminCookie },
+        body: mapFdBasic,
+      });
+      const mapBasicBody = await mapBasic.json().catch(() => ({}));
+      fail(mapBasic.status === 403, 'PLAN=basic POST mapping returns 403');
+      fail(/Pro|πακέτο/i.test(String(mapBasicBody.error || '')), 'basic mapping 403 names Pro plan');
+
+      const ordFdBasic = new FormData();
+      ordFdBasic.append('orders', new Blob([fs.readFileSync(ordersPath)]), 'orders.xlsx');
+      const ordBasic = await fetch(`${basicBase}/api/admin/collections/${colB.id}/orders`, {
+        method: 'POST',
+        headers: { Cookie: adminCookie },
+        body: ordFdBasic,
+      });
+      fail(ordBasic.status === 403, 'PLAN=basic POST orders returns 403');
+
+      const visSelected = await fetch(`${basicBase}/api/admin/collections/${colB.id}/visibility`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Cookie: adminCookie },
+        body: JSON.stringify({ visibility: 'selected', tags: ['smoke-vip'] }),
+      });
+      fail(visSelected.status === 403, "PLAN=basic PATCH visibility to 'selected' returns 403");
+
+      const visAll = await fetch(`${basicBase}/api/admin/collections/${colB.id}/visibility`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Cookie: adminCookie },
+        body: JSON.stringify({ visibility: 'all', tags: [] }),
+      });
+      fail(visAll.status === 200, "PLAN=basic PATCH visibility back to 'all' returns 200");
+
+      const orderCount = db
+        .prepare('SELECT COUNT(*) AS count FROM order_items WHERE collection_id = ?')
+        .get(colB.id).count;
+      fail(orderCount > 0, 'downgrade fixture collection B still has order_items rows');
+
+      await customerLogin('6912345678', c1.accessCode);
+      const galBasic = await fetch(`${basicBase}/api/collections/${colB.id}`, {
+        headers: { Cookie: sessionCookie },
+      }).then((r) => r.json());
+      fail(
+        Array.isArray(galBasic.images)
+          && galBasic.images.length === 4
+          && galBasic.images.every((img) => img.downloadable),
+        'PLAN=basic with order_items still shows every image (downgrade safety)'
+      );
+    });
+
+    // --- Feature flags: PLAN=pro ---
+    await withTempServer({ PLAN: 'pro' }, async (proBase) => {
+      const proFetch = (url, opts = {}) =>
+        fetch(url, { ...opts, headers: { ...opts.headers, Cookie: adminCookie } });
+
+      const mapFdPro = new FormData();
+      mapFdPro.append('mapping', new Blob([fs.readFileSync(mappingPath)]), 'mapping.xlsx');
+      const mapPro = await proFetch(`${proBase}/api/admin/collections/${colB.id}/mapping`, {
+        method: 'POST',
+        body: mapFdPro,
+      });
+      fail(mapPro.status === 200, 'PLAN=pro POST mapping succeeds');
+
+      const ordFdPro = new FormData();
+      ordFdPro.append('orders', new Blob([fs.readFileSync(ordersPath)]), 'orders.xlsx');
+      const ordPro = await proFetch(`${proBase}/api/admin/collections/${colB.id}/orders`, {
+        method: 'POST',
+        body: ordFdPro,
+      });
+      fail(ordPro.status === 200, 'PLAN=pro POST orders succeeds');
+
+      const visSelectedPro = await proFetch(`${proBase}/api/admin/collections/${colC.id}/visibility`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ visibility: 'selected', tags: ['smoke-vip'] }),
+      });
+      fail(visSelectedPro.status === 200, "PLAN=pro PATCH visibility to 'selected' succeeds");
+
+      const visAllPro = await proFetch(`${proBase}/api/admin/collections/${colC.id}/visibility`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ visibility: 'all', tags: [] }),
+      });
+      fail(visAllPro.status === 200, "PLAN=pro PATCH visibility back to 'all' succeeds");
+
+      // Restore restricted visibility for consistency with earlier assertions' data shape
+      await proFetch(`${proBase}/api/admin/collections/${colC.id}/visibility`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ visibility: 'selected', tags: ['smoke-vip'] }),
+      });
+
+      await customerLogin('6912345678', c1.accessCode);
+      const galPro = await fetch(`${proBase}/api/collections/${colB.id}`, {
+        headers: { Cookie: sessionCookie },
+      }).then((r) => r.json());
+      fail(
+        Array.isArray(galPro.images) && galPro.images.length === 1,
+        'PLAN=pro with order_items filters correctly again'
+      );
+    });
+
+    // --- Retention derived from PLAN ---
+    withPlanConfig('basic', ({ config, retention }) => {
+      fail(config.DEFAULT_RETENTION_MONTHS === 12, 'PLAN=basic effective retention is 12 months');
+      fail(
+        retention.getEffectiveRetention({ retention_months: null, retention_pinned: 0 }) === 12,
+        'PLAN=basic getEffectiveRetention defaults to 12'
+      );
+    });
+
+    const ancient = db.prepare(
+      `INSERT INTO collections (name, status, published_at, retention_pinned, retention_months)
+       VALUES ('Ancient Retention', 'published', datetime('now', '-10 years'), 0, NULL)`
+    ).run();
+    withPlanConfig('business', ({ config, retention }) => {
+      fail(config.DEFAULT_RETENTION_MONTHS == null, 'PLAN=business default retention is null');
+      const candidates = retention.findPurgeCandidates();
+      fail(candidates.length === 0, 'PLAN=business returns no purge candidates');
+      fail(
+        !candidates.some((c) => c.id === ancient.lastInsertRowid),
+        'PLAN=business ignores decade-old published collections'
+      );
+    });
+    db.prepare('DELETE FROM collections WHERE id = ?').run(ancient.lastInsertRowid);
 
     // Disable customer
     await adminFetch(`${BASE}/api/admin/customers/${c1.customer.id}`, {

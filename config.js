@@ -3,8 +3,8 @@ const COMPANY_NAME = String(process.env.COMPANY_NAME || '').trim();
 const COMPANY_PHONE = String(process.env.COMPANY_PHONE || '').trim();
 const COMPANY_EMAIL = String(process.env.COMPANY_EMAIL || '').trim();
 const COMPANY_ADDRESS = String(process.env.COMPANY_ADDRESS || '').trim();
-const ACCENT_COLOR = process.env.ACCENT_COLOR || '#8b7bf0';
-const LOGO_PATH = String(process.env.LOGO_PATH || '').replace(/\s+/g, '').trim() || null;
+const ACCENT_COLOR = process.env.ACCENT_COLOR || '#2563EB';
+const LOGO_PATH = String(process.env.LOGO_PATH || '/shared/kollekta-lockup.svg').replace(/\s+/g, '').trim() || '/shared/kollekta-lockup.svg';
 const FOOTER_TEXT = process.env.FOOTER_TEXT || '';
 const APP_PUBLIC_URL = String(process.env.APP_PUBLIC_URL || 'https://kollekta.gr').replace(/\s+/g, '').trim()
   || 'https://kollekta.gr';
@@ -23,9 +23,6 @@ const YUBOTO_API_TOKEN = process.env.YUBOTO_API_TOKEN || '';
 const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID || '';
 const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN || '';
 const TWILIO_FROM = process.env.TWILIO_FROM || '';
-const DEFAULT_RETENTION_MONTHS = process.env.DEFAULT_RETENTION_MONTHS
-  ? Number(process.env.DEFAULT_RETENTION_MONTHS)
-  : 18;
 const RETENTION_AUTO_PURGE = process.env.RETENTION_AUTO_PURGE === 'true';
 const STORAGE_WARN_PERCENT = Number(process.env.STORAGE_WARN_PERCENT) || 75;
 const STORAGE_CRITICAL_PERCENT = Number(process.env.STORAGE_CRITICAL_PERCENT) || 90;
@@ -36,8 +33,58 @@ const RATE_LIMIT_RESET_MAX_PER_PHONE = Number(process.env.RATE_LIMIT_RESET_MAX_P
 const RATE_LIMIT_RESET_MAX_PER_IP = Number(process.env.RATE_LIMIT_RESET_MAX_PER_IP) || 30;
 const QUOTA_GB = process.env.QUOTA_GB !== undefined && process.env.QUOTA_GB !== ''
   ? Number(process.env.QUOTA_GB)
-  : 20;
+  : 10;
 const QUOTA_WARN_PERCENT = Number(process.env.QUOTA_WARN_PERCENT) || 80;
+
+function parseBoolEnv(value, defaultValue) {
+  if (value === undefined || value === null || value === '') return defaultValue;
+  const normalized = String(value).trim().toLowerCase();
+  if (['1', 'true', 'yes', 'on'].includes(normalized)) return true;
+  if (['0', 'false', 'no', 'off'].includes(normalized)) return false;
+  return defaultValue;
+}
+
+const PLAN_RAW = String(process.env.PLAN || 'basic').trim().toLowerCase();
+const PLAN = ['basic', 'pro', 'business'].includes(PLAN_RAW) ? PLAN_RAW : 'basic';
+const planIsProPlus = PLAN === 'pro' || PLAN === 'business';
+
+function planDefaultRetentionMonths(plan) {
+  if (plan === 'business') return null;
+  if (plan === 'pro') return 24;
+  return 12;
+}
+
+function parseRetentionMonthsEnv(value, planDefault) {
+  if (value === undefined || value === null || value === '') return planDefault;
+  const normalized = String(value).trim().toLowerCase();
+  if (['null', 'none', 'off', 'never'].includes(normalized)) return null;
+  const n = Number(normalized);
+  if (!Number.isFinite(n) || n < 0) return planDefault;
+  return n;
+}
+
+const DEFAULT_RETENTION_MONTHS = parseRetentionMonthsEnv(
+  process.env.DEFAULT_RETENTION_MONTHS,
+  planDefaultRetentionMonths(PLAN)
+);
+
+const FEATURE_PRODUCT_CODES = parseBoolEnv(process.env.FEATURE_PRODUCT_CODES, planIsProPlus);
+const FEATURE_ORDER_FILTERING = parseBoolEnv(process.env.FEATURE_ORDER_FILTERING, planIsProPlus);
+const FEATURE_TAGS = parseBoolEnv(process.env.FEATURE_TAGS, planIsProPlus);
+const FEATURE_CUSTOM_SMTP = parseBoolEnv(process.env.FEATURE_CUSTOM_SMTP, planIsProPlus);
+const FEATURE_RETENTION_OVERRIDE = parseBoolEnv(process.env.FEATURE_RETENTION_OVERRIDE, planIsProPlus);
+
+const features = {
+  productCodes: FEATURE_PRODUCT_CODES,
+  orderFiltering: FEATURE_ORDER_FILTERING,
+  tags: FEATURE_TAGS,
+  customSmtp: FEATURE_CUSTOM_SMTP,
+  retentionOverride: FEATURE_RETENTION_OVERRIDE,
+};
+
+function featureRequiredMessage(planLabel = 'Pro') {
+  return `Αυτή η λειτουργία είναι διαθέσιμη στο πακέτο ${planLabel}. Επικοινώνησε μαζί μας για αναβάθμιση.`;
+}
 
 function fail(message) {
   console.error(`Σφάλμα ρύθμισης: ${message}`);
@@ -108,6 +155,9 @@ if (!ADMIN_PASSWORD) fail('ADMIN_PASSWORD είναι υποχρεωτικό.');
 if (!SESSION_COOKIE_SECRET) fail('SESSION_COOKIE_SECRET είναι υποχρεωτικό.');
 
 if (EMAIL_PROVIDER === 'smtp') {
+  if (!FEATURE_CUSTOM_SMTP) {
+    fail('Το τρέχον πακέτο δεν περιλαμβάνει custom SMTP. Ανέβασε το PLAN ή βάλε FEATURE_CUSTOM_SMTP=true, αλλιώς χρησιμοποίησε EMAIL_PROVIDER=resend|console.');
+  }
   if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS || !EMAIL_FROM) {
     fail('Για EMAIL_PROVIDER=smtp απαιτούνται SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS και EMAIL_FROM (ή COMPANY_NAME + APP_PUBLIC_URL).');
   }
@@ -144,6 +194,8 @@ const publicBranding = {
   footerText: FOOTER_TEXT,
   storageWarnPercent: STORAGE_WARN_PERCENT,
   storageCriticalPercent: STORAGE_CRITICAL_PERCENT,
+  retentionMonths: DEFAULT_RETENTION_MONTHS,
+  features,
 };
 
 module.exports = {
@@ -185,5 +237,13 @@ module.exports = {
   RATE_LIMIT_RESET_MAX_PER_IP,
   QUOTA_GB,
   QUOTA_WARN_PERCENT,
+  PLAN,
+  FEATURE_PRODUCT_CODES,
+  FEATURE_ORDER_FILTERING,
+  FEATURE_TAGS,
+  FEATURE_CUSTOM_SMTP,
+  FEATURE_RETENTION_OVERRIDE,
+  features,
+  featureRequiredMessage,
   publicBranding,
 };

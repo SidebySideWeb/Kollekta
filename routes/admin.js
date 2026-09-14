@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 
 const db = require('../db');
+const config = require('../config');
 const { processImageFast, deleteImageAssets } = require('../lib/imageProcessor');
 const { enqueueThumbJob } = require('../lib/imageJobs');
 const { uploadsDir } = require('../lib/storage');
@@ -22,7 +23,7 @@ const {
   getDiskUsage,
   getRecentSnapshots,
 } = require('../lib/storage');
-const { findPurgeCandidates, purgeCollection } = require('../lib/retention');
+const { findPurgeCandidates, purgeCollection, getRetentionSummary } = require('../lib/retention');
 const { changeAdminPassword, listAdmins, createAdmin, deleteAdmin } = require('../lib/adminAuth');
 const { getQuotaStatus, checkUploadAllowed } = require('../lib/quota');
 const {
@@ -36,6 +37,12 @@ const {
 } = require('../lib/sampleExcel');
 
 const router = express.Router();
+
+function requireFeature(enabled, res) {
+  if (enabled) return true;
+  res.status(403).json({ error: config.featureRequiredMessage('Pro') });
+  return false;
+}
 
 const IMAGE_MAX_FILE_BYTES = 200 * 1024 * 1024;
 const IMAGE_MAX_FILES_PER_BATCH = 20;
@@ -136,11 +143,23 @@ router.get('/collections', (_req, res) => {
   const collections = db
     .prepare(
       `SELECT c.id, c.name, c.status, c.published_at, c.created_at,
-              (SELECT COUNT(*) FROM images i WHERE i.collection_id = c.id) AS image_count
+              (SELECT COUNT(*) FROM images i WHERE i.collection_id = c.id) AS image_count,
+              (SELECT i.id FROM images i WHERE i.collection_id = c.id ORDER BY i.id LIMIT 1) AS cover_image_id
        FROM collections c
        ORDER BY c.created_at DESC, c.id DESC`
     )
-    .all();
+    .all()
+    .map((c) => ({
+      id: c.id,
+      name: c.name,
+      status: c.status,
+      published_at: c.published_at,
+      created_at: c.created_at,
+      image_count: c.image_count,
+      cover_thumb_url: c.cover_image_id
+        ? `/api/admin/collections/${c.id}/images/${c.cover_image_id}/thumb`
+        : null,
+    }));
   res.json(collections);
 });
 
@@ -161,7 +180,8 @@ router.get('/collections/:id', (req, res) => {
   res.json({
     ...collection,
     images,
-    hasOrderData: collectionHasOrders(id),
+    hasOrderData: config.FEATURE_ORDER_FILTERING && collectionHasOrders(id),
+    ...getRetentionSummary(collection),
   });
 });
 
@@ -340,6 +360,7 @@ router.post('/collections/:id/images/bulk-delete', (req, res) => {
 });
 
 router.post('/collections/:id/mapping', upload.single('mapping'), (req, res) => {
+  if (!requireFeature(config.FEATURE_PRODUCT_CODES, res)) return;
   const collectionId = Number(req.params.id);
   const collection = db.prepare('SELECT id FROM collections WHERE id = ?').get(collectionId);
   if (!collection) {
@@ -424,6 +445,7 @@ router.get('/collections/:id/export/orders', (req, res) => {
 });
 
 router.post('/collections/:id/orders', upload.single('orders'), (req, res) => {
+  if (!requireFeature(config.FEATURE_ORDER_FILTERING, res)) return;
   const collectionId = Number(req.params.id);
   const collection = db.prepare('SELECT id FROM collections WHERE id = ?').get(collectionId);
   if (!collection) {
@@ -892,6 +914,9 @@ router.patch('/collections/:id/visibility', (req, res) => {
     return res.status(404).json({ error: 'Η συλλογή δεν βρέθηκε.' });
   }
 
+  // Downgrade safety: always allow switching back to 'all'.
+  if (visibility === 'selected' && !requireFeature(config.FEATURE_TAGS, res)) return;
+
   if (visibility === 'selected' && tags.length === 0) {
     return res.status(400).json({ error: 'Επίλεξε τουλάχιστον ένα tag για περιορισμένη ορατότητα.' });
   }
@@ -916,6 +941,7 @@ router.get('/collections/:id/audience', (req, res) => {
 });
 
 router.get('/customers/tags', (_req, res) => {
+  if (!requireFeature(config.FEATURE_TAGS, res)) return;
   const customers = db.prepare("SELECT tags FROM customers WHERE tags IS NOT NULL AND tags != ''").all();
   const counts = {};
   for (const row of customers) {
@@ -935,7 +961,13 @@ router.get('/storage', (_req, res) => {
   const disk = getDiskUsage();
   const snapshots = getRecentSnapshots(30);
   const quota = getQuotaStatus();
-  res.json({ total, disk, snapshots, quota });
+  res.json({
+    total,
+    disk,
+    snapshots,
+    quota,
+    retentionMonths: config.DEFAULT_RETENTION_MONTHS,
+  });
 });
 
 router.get('/quota', (_req, res) => {
@@ -963,6 +995,8 @@ router.post('/collections/:id/purge-full', (req, res) => {
 });
 
 router.patch('/collections/:id/retention', (req, res) => {
+  if (!requireFeature(config.FEATURE_RETENTION_OVERRIDE, res)) return;
+
   const collectionId = Number(req.params.id);
   const collection = db.prepare('SELECT * FROM collections WHERE id = ?').get(collectionId);
   if (!collection) {
@@ -975,6 +1009,10 @@ router.patch('/collections/:id/retention', (req, res) => {
       : Number(req.body.retentionMonths);
   const pinned = req.body.pinned !== undefined ? (req.body.pinned ? 1 : 0) : collection.retention_pinned;
 
+  if (retentionMonths !== null && (!Number.isFinite(retentionMonths) || retentionMonths < 1)) {
+    return res.status(400).json({ error: 'Μη έγκυρη τιμή διατήρησης.' });
+  }
+
   db.prepare(
     'UPDATE collections SET retention_months = ?, retention_pinned = ? WHERE id = ?'
   ).run(retentionMonths, pinned, collectionId);
@@ -983,6 +1021,7 @@ router.patch('/collections/:id/retention', (req, res) => {
   res.json({
     ...updated,
     storage: getCollectionStorage(collectionId),
+    ...getRetentionSummary(updated),
   });
 });
 

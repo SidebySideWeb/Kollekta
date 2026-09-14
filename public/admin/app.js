@@ -16,6 +16,48 @@ let galleryModalImages = [];
 const gallerySelectedIds = new Set();
 let imageUploadInProgress = false;
 
+/** Feature flags from GET /api/branding (never includes plan name). */
+let features = {
+  productCodes: false,
+  orderFiltering: false,
+  tags: false,
+  customSmtp: false,
+  retentionOverride: false,
+};
+let brandingContactEmail = '';
+/** Effective plan retention in months, or null = never purge. */
+let retentionMonths = 12;
+
+function hasFeature(key) {
+  return Boolean(features?.[key]);
+}
+
+function upgradeContactHref() {
+  if (brandingContactEmail) return `mailto:${brandingContactEmail}`;
+  return 'mailto:hello@kollekta.gr';
+}
+
+function retentionPolicyLine(months = retentionMonths) {
+  if (months == null) {
+    return 'Τα αρχεία πλήρους ανάλυσης διατηρούνται μόνιμα.';
+  }
+  return `Τα αρχεία πλήρους ανάλυσης διατηρούνται ${months} μήνες. Μετά, οι συλλογές παραμένουν ορατές σε ανάλυση web.`;
+}
+
+function formatPurgeDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('el-GR', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function applyFeatureUi() {
+  document.querySelectorAll('[data-feature]').forEach((el) => {
+    const key = el.getAttribute('data-feature');
+    el.classList.toggle('hidden', !hasFeature(key));
+  });
+}
+
 const IMAGE_BATCH_MAX_BYTES = 50 * 1024 * 1024;
 const IMAGE_BATCH_MAX_FILES = 8;
 const IMAGE_BATCH_UPLOAD_TIMEOUT_MS = 45 * 60 * 1000;
@@ -24,6 +66,10 @@ const IMAGE_BATCH_FAST_SECONDS = 15;
 const IMAGE_LARGE_UPLOAD_BYTES = 1024 * 1024 * 1024;
 const IMAGE_UPLOAD_PROBE_BPS = (5 * 1e6) / 8;
 const IMAGE_UPLOAD_RETRY_DELAYS_MS = [2000, 5000, 12000];
+const IMAGE_OPTIMIZE_TARGET_EDGE = 3000;
+const IMAGE_OPTIMIZE_MIN_EDGE = 1600; // never shrink below server web variant
+const IMAGE_OPTIMIZE_JPEG_QUALITY = 0.9;
+const IMAGE_OPTIMIZE_EST_BYTES = Math.round(2.5 * 1024 * 1024);
 
 function fileUploadKey(file) {
   return `${file.name}:${file.size}:${file.lastModified}`;
@@ -45,6 +91,154 @@ function formatUploadEta(seconds) {
   const mins = Math.ceil(seconds / 60);
   if (mins <= 1) return 'περίπου 1 λεπτό ακόμα';
   return `περίπου ${mins} λεπτά ακόμα`;
+}
+
+function formatMinutesEstimate(bytes, bytesPerSecond = IMAGE_UPLOAD_PROBE_BPS) {
+  const speed = bytesPerSecond > 0 ? bytesPerSecond : IMAGE_UPLOAD_PROBE_BPS;
+  return Math.max(1, Math.ceil(bytes / speed / 60));
+}
+
+function getUploadQualityMode() {
+  return document.querySelector('input[name="upload-quality"]:checked')?.value || 'optimized';
+}
+
+function estimateOptimizedUploadBytes(files) {
+  return files.reduce((sum, file) => {
+    if ((file.size || 0) > IMAGE_OPTIMIZE_EST_BYTES * 1.15) {
+      return sum + Math.min(file.size, IMAGE_OPTIMIZE_EST_BYTES);
+    }
+    return sum + (file.size || 0);
+  }, 0);
+}
+
+function updateUploadSizeEstimate(files = null, measuredBps = null) {
+  const el = document.getElementById('upload-size-estimate');
+  if (!el) return;
+  const list = files || [...(document.getElementById('images-input')?.files || [])];
+  if (!list.length) {
+    el.classList.add('hidden');
+    el.textContent = '';
+    return;
+  }
+
+  const originalBytes = sumFileBytes(list);
+  const mode = getUploadQualityMode();
+  const optimizedBytes = mode === 'optimized' ? estimateOptimizedUploadBytes(list) : originalBytes;
+  const speed = measuredBps > 0 ? measuredBps : IMAGE_UPLOAD_PROBE_BPS;
+  const originalMins = formatMinutesEstimate(originalBytes, speed);
+  const optimizedMins = formatMinutesEstimate(optimizedBytes, speed);
+
+  el.classList.remove('hidden');
+  if (mode === 'optimized' && optimizedBytes < originalBytes * 0.95) {
+    el.textContent = `${list.length} εικόνες · ${fmtBytes(originalBytes)} → ${fmtBytes(optimizedBytes)} · περίπου ${optimizedMins} λεπτά αντί για ${originalMins}`;
+  } else if (mode === 'optimized') {
+    el.textContent = `${list.length} εικόνες · ${fmtBytes(originalBytes)} · περίπου ${originalMins} λεπτά (λίγες χρειάζονται βελτιστοποίηση)`;
+  } else {
+    el.textContent = `${list.length} εικόνες · ${fmtBytes(originalBytes)} · περίπου ${originalMins} λεπτά σε πλήρη ανάλυση`;
+  }
+}
+
+function bitmapHasTransparency(bitmap) {
+  const sw = Math.min(bitmap.width, 64);
+  const sh = Math.min(bitmap.height, 64);
+  const canvas = document.createElement('canvas');
+  canvas.width = sw;
+  canvas.height = sh;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  if (!ctx) return false;
+  ctx.drawImage(bitmap, 0, 0, sw, sh);
+  const data = ctx.getImageData(0, 0, sw, sh).data;
+  for (let i = 3; i < data.length; i += 4) {
+    if (data[i] < 255) return true;
+  }
+  return false;
+}
+
+function optimizedJpegName(name) {
+  const base = String(name || 'image').replace(/\.[^.]+$/, '');
+  return `${base}.jpg`;
+}
+
+async function canvasToJpegBlob(canvas, quality) {
+  if (typeof canvas.convertToBlob === 'function') {
+    return canvas.convertToBlob({ type: 'image/jpeg', quality });
+  }
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => (blob ? resolve(blob) : reject(new Error('toBlob failed'))),
+      'image/jpeg',
+      quality
+    );
+  });
+}
+
+async function downscaleImageFile(file, maxEdge = IMAGE_OPTIMIZE_TARGET_EDGE) {
+  if (typeof createImageBitmap !== 'function') return file;
+  const targetEdge = Math.max(Number(maxEdge) || IMAGE_OPTIMIZE_TARGET_EDGE, IMAGE_OPTIMIZE_MIN_EDGE);
+  let bitmap = null;
+  try {
+    bitmap = await createImageBitmap(file);
+  } catch {
+    return file;
+  }
+
+  try {
+    const width = bitmap.width;
+    const height = bitmap.height;
+    const longest = Math.max(width, height);
+    if (!longest || longest <= targetEdge) {
+      bitmap.close();
+      return file;
+    }
+
+    const isPng = file.type === 'image/png' || /\.png$/i.test(file.name);
+    if (isPng && bitmapHasTransparency(bitmap)) {
+      bitmap.close();
+      return file;
+    }
+
+    const scale = targetEdge / longest;
+    const tw = Math.max(1, Math.round(width * scale));
+    const th = Math.max(1, Math.round(height * scale));
+
+    let canvas;
+    if (typeof OffscreenCanvas !== 'undefined') {
+      canvas = new OffscreenCanvas(tw, th);
+    } else {
+      canvas = document.createElement('canvas');
+      canvas.width = tw;
+      canvas.height = th;
+    }
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      bitmap.close();
+      return file;
+    }
+    ctx.drawImage(bitmap, 0, 0, tw, th);
+    bitmap.close();
+    bitmap = null;
+
+    const blob = await canvasToJpegBlob(canvas, IMAGE_OPTIMIZE_JPEG_QUALITY);
+    return new File([blob], optimizedJpegName(file.name), {
+      type: 'image/jpeg',
+      lastModified: file.lastModified || Date.now(),
+    });
+  } catch {
+    try { bitmap?.close(); } catch { /* ignore */ }
+    return file;
+  }
+}
+
+async function prepareImagesForUpload(files, { optimized, onProgress } = {}) {
+  if (!optimized) return [...files];
+  const prepared = [];
+  for (let i = 0; i < files.length; i += 1) {
+    onProgress?.(i + 1, files.length);
+    prepared.push(await downscaleImageFile(files[i], IMAGE_OPTIMIZE_TARGET_EDGE));
+    // Yield so the UI can paint prep progress between large decodes.
+    await sleep(0);
+  }
+  return prepared;
 }
 
 function sleep(ms) {
@@ -537,7 +731,7 @@ function hideToast() {
 
 async function applyBranding() {
   const b = await fetch('/api/branding').then(r => r.json());
-  document.documentElement.style.setProperty('--accent', b.accentColor || '#8b7bf0');
+  document.documentElement.style.setProperty('--accent', b.accentColor || '#2563EB');
   if (b.storageWarnPercent) {
     document.documentElement.style.setProperty('--storage-warn-percent', b.storageWarnPercent);
   }
@@ -547,21 +741,69 @@ async function applyBranding() {
   document.title = b.companyName ? `${b.companyName} Admin` : 'Kollekta Admin';
   const logo = document.getElementById('brand-logo');
   const name = document.getElementById('brand-name');
-  if (b.logoPath) { logo.src = b.logoPath; logo.classList.remove('hidden'); name.classList.add('hidden'); }
-  else name.textContent = b.companyName || 'Kollekta';
+  const brandText = document.querySelector('.brand-text');
+  const defaultLockup = '/shared/kollekta-lockup.svg';
+  const logoPath = b.logoPath || defaultLockup;
+  const isMarkOnly = /kollekta-mark\.svg$/i.test(logoPath);
+  logo.src = logoPath;
+  logo.alt = b.companyName || 'Kollekta';
+  logo.classList.remove('hidden');
+  logo.classList.toggle('brand-logo-mark', isMarkOnly);
+  logo.classList.toggle('brand-logo-full', !isMarkOnly);
+  // Full lockups already include the wordmark — only show text next to a mark icon.
+  if (isMarkOnly) {
+    brandText?.classList.remove('hidden');
+    name.textContent = b.companyName || 'Kollekta';
+  } else {
+    brandText?.classList.add('hidden');
+  }
+  features = {
+    productCodes: Boolean(b.features?.productCodes),
+    orderFiltering: Boolean(b.features?.orderFiltering),
+    tags: Boolean(b.features?.tags),
+    customSmtp: Boolean(b.features?.customSmtp),
+    retentionOverride: Boolean(b.features?.retentionOverride),
+  };
+  brandingContactEmail = String(b.companyEmail || '').trim();
+  retentionMonths = b.retentionMonths === null || b.retentionMonths === undefined
+    ? null
+    : Number(b.retentionMonths);
+  if (retentionMonths != null && !Number.isFinite(retentionMonths)) retentionMonths = 12;
+  applyFeatureUi();
 }
 
 async function loadCollections() {
   const list = await api('/collections');
   const el = document.getElementById('collections-list');
   if (!list.length) { el.innerHTML = '<p class="subtitle">Δεν υπάρχουν συλλογές.</p>'; return; }
-  el.innerHTML = list.map(c => `
-    <article class="collection-card" data-id="${c.id}">
-      <h3>${escapeHtml(c.name)} <span class="pill pill-${c.status}">${c.status}</span></h3>
-      <p>${c.image_count} εικόνες · ${escapeHtml(c.created_at || '')}</p>
-    </article>`).join('');
+  const statusLabel = (s) => {
+    if (s === 'published') return 'Δημοσιευμένη';
+    if (s === 'draft') return 'Πρόχειρη';
+    if (s === 'archived') return 'Αρχειοθετημένη';
+    return s;
+  };
+  el.innerHTML = list.map(c => {
+    const cover = c.cover_thumb_url
+      ? `<img src="${escapeHtml(c.cover_thumb_url)}" alt="" loading="lazy">`
+      : `<div class="collection-card-placeholder"><span>Χωρίς εξώφυλλο</span></div>`;
+    const date = escapeHtml(c.published_at || c.created_at || '');
+    return `
+    <article class="collection-card" data-id="${c.id}" data-name="${escapeHtml(c.name)}">
+      <div class="collection-card-cover">
+        ${cover}
+        <span class="pill pill-${escapeHtml(c.status)} collection-card-status">${escapeHtml(statusLabel(c.status))}</span>
+      </div>
+      <div class="collection-card-body">
+        <h3>${escapeHtml(c.name)}</h3>
+        <p>${c.image_count} εικόνες${date ? ` · ${date}` : ''}</p>
+        <div class="collection-card-actions">
+          <span class="collection-card-link">Επεξεργασία</span>
+        </div>
+      </div>
+    </article>`;
+  }).join('');
   el.querySelectorAll('.collection-card').forEach(card => {
-    card.onclick = () => openCollection(Number(card.dataset.id), card.querySelector('h3').textContent.split(' ')[0]);
+    card.onclick = () => openCollection(Number(card.dataset.id), card.dataset.name);
   });
 }
 
@@ -703,6 +945,20 @@ function renderWizard(collection, audience = { visibility: 'all', selectedTags: 
       }).join('')}</div>`
     : '<p class="subtitle">Δεν υπάρχουν tags ακόμα. Πρόσθεσέ τα στους πελάτες (στήλη Tags ή εισαγωγή Excel).</p>';
 
+  const publishSummaryRows = [
+    `<div class="summary-row"><span>Εικόνες</span><span class="mono">${collection.images?.length || 0}</span></div>`,
+  ];
+  if (hasFeature('orderFiltering')) {
+    publishSummaryRows.push(
+      `<div class="summary-row"><span>Φιλτράρισμα παραγγελίας</span><span class="pill">${collection.hasOrderData ? 'Ενεργό' : 'Ανενεργό'}</span></div>`
+    );
+  }
+  if (hasFeature('tags')) {
+    publishSummaryRows.push(
+      `<div class="summary-row"><span>Ορατότητα</span><span class="mono">${audience.reachCount} πελάτες</span></div>`
+    );
+  }
+
   const publishBlock = isPublished
     ? `<div class="step-body">
         <div class="notice-slot notice-banner notice-success">
@@ -716,9 +972,7 @@ function renderWizard(collection, audience = { visibility: 'all', selectedTags: 
     : `<div class="step-body">
         <div class="publish-summary">
           <h4>Σύνοψη δημοσίευσης</h4>
-          <div class="summary-row"><span>Εικόνες</span><span class="mono">${collection.images?.length || 0}</span></div>
-          <div class="summary-row"><span>Φιλτράρισμα παραγγελίας</span><span class="pill">${collection.hasOrderData ? 'Ενεργό' : 'Ανενεργό'}</span></div>
-          <div class="summary-row"><span>Ορατότητα</span><span class="mono">${audience.reachCount} πελάτες</span></div>
+          ${publishSummaryRows.join('')}
         </div>
         <label class="notify-option">
           <input type="checkbox" id="notify-checkbox">
@@ -732,13 +986,33 @@ function renderWizard(collection, audience = { visibility: 'all', selectedTags: 
         </div>
         <div class="notice-slot hidden" id="status-publish" role="status"></div>
       </div>`;
-  w.innerHTML = `
+
+  let step = 1;
+  const parts = [];
+
+  parts.push(`
     <article class="step-card">
-      <div class="step-header"><span class="step-number">1</span><div>
+      <div class="step-header"><span class="step-number">${step++}</span><div>
         <h3>Φωτογραφίες συλλογής</h3>
         <p>Ανέβασε τις φωτογραφίες (JPG, PNG, HEIC). Οι μεγάλες συλλογές ανεβαίνουν αυτόματα σε μικρές παρτίδες (έως 50MB).</p>
       </div></div>
       <div class="step-body">
+        <div class="upload-quality-options" role="radiogroup" aria-label="Ποιότητα ανεβάσματος">
+          <label class="upload-quality-option">
+            <input type="radio" name="upload-quality" value="optimized" checked>
+            <div>
+              <strong>Βελτιστοποιημένο (προτείνεται)</strong>
+              <p class="subtitle">Κατάλληλο για eshop και εκτύπωση έως 25cm</p>
+            </div>
+          </label>
+          <label class="upload-quality-option">
+            <input type="radio" name="upload-quality" value="original">
+            <div>
+              <strong>Πλήρης ανάλυση</strong>
+              <p class="subtitle">Μόνο για μεγάλες εκτυπώσεις. Πολύ πιο αργό ανέβασμα.</p>
+            </div>
+          </label>
+        </div>
         ${renderFileUploadRow({
           inputId: 'images-input',
           accept: 'image/*',
@@ -747,14 +1021,17 @@ function renderWizard(collection, audience = { visibility: 'all', selectedTags: 
           pickLabel: 'Επιλογή εικόνων',
           multiple: true,
         })}
+        <p id="upload-size-estimate" class="upload-size-estimate hidden" aria-live="polite"></p>
         ${renderQuotaRemainingLine(null)}
         <div class="notice-slot hidden" id="status-images" role="status"></div>
         ${renderAdminImageSummary(collection.images, collection.id)}
       </div>
-    </article>
+    </article>`);
 
+  if (hasFeature('productCodes')) {
+    parts.push(`
     <article class="step-card">
-      <div class="step-header"><span class="step-number">2</span><div>
+      <div class="step-header"><span class="step-number">${step++}</span><div>
         <h3>Αντιστοίχιση κωδικών <span class="badge-optional">Προαιρετικό</span></h3>
         <p>Excel: <code>filename</code>/<code>εικόνα</code> + <code>product</code>/<code>κωδικ</code>.</p>
         <div class="step-downloads">
@@ -772,10 +1049,13 @@ function renderWizard(collection, audience = { visibility: 'all', selectedTags: 
         })}
         <div class="notice-slot hidden" id="status-mapping" role="status"></div>
       </div>
-    </article>
+    </article>`);
+  }
 
+  if (hasFeature('orderFiltering')) {
+    parts.push(`
     <article class="step-card">
-      <div class="step-header"><span class="step-number">3</span><div>
+      <div class="step-header"><span class="step-number">${step++}</span><div>
         <h3>Παραγγελίες <span class="badge-optional">Προαιρετικό</span></h3>
         <p>Excel: <code>erp</code>/<code>email</code>/<code>phone</code> + <code>product</code>/<code>κωδικ</code>.</p>
         <div class="step-downloads">
@@ -793,10 +1073,13 @@ function renderWizard(collection, audience = { visibility: 'all', selectedTags: 
         })}
         <div class="notice-slot hidden" id="status-orders" role="status"></div>
       </div>
-    </article>
+    </article>`);
+  }
 
+  if (hasFeature('tags')) {
+    parts.push(`
     <article class="step-card">
-      <div class="step-header"><span class="step-number">4</span><div>
+      <div class="step-header"><span class="step-number">${step++}</span><div>
         <h3>Ορατότητα</h3>
         <p>Ποιοι πελάτες βλέπουν αυτή τη συλλογή (ανά tag).</p>
       </div></div>
@@ -817,19 +1100,71 @@ function renderWizard(collection, audience = { visibility: 'all', selectedTags: 
         </div>
         <div class="notice-slot hidden" id="status-visibility" role="status"></div>
       </div>
-    </article>
+    </article>`);
+  }
 
+  parts.push(`
     <article class="step-card">
-      <div class="step-header"><span class="step-number">5</span><div>
+      <div class="step-header"><span class="step-number">${step++}</span><div>
         <h3>Δημοσίευση</h3>
         <p>Τελικός έλεγχος πριν τη δημοσίευση.</p>
       </div></div>
       ${publishBlock}
-    </article>`;
+    </article>`);
+
+  if (collection.purgeWarning?.purgeAt && !collection.full_purged_at) {
+    const dateLabel = formatPurgeDate(collection.purgeWarning.purgeAt);
+    parts.push(`
+    <div class="notice-slot notice-banner notice-warn retention-purge-warning" role="status">
+      <p class="notice-title">Αρχειοθέτηση πλήρους ανάλυσης</p>
+      <p class="notice-text">Τα αρχεία πλήρους ανάλυσης θα αρχειοθετηθούν στις <strong>${escapeHtml(dateLabel)}</strong>. Μετά, η συλλογή παραμένει ορατή σε ανάλυση web.</p>
+    </div>`);
+  }
+
+  if (hasFeature('retentionOverride')) {
+    const currentMonths = collection.retention_months == null ? '' : String(collection.retention_months);
+    const pinned = Number(collection.retention_pinned) === 1;
+    const monthOptions = [6, 12, 18, 24, 36]
+      .map((m) => `<option value="${m}" ${currentMonths === String(m) ? 'selected' : ''}>${m} μήνες</option>`)
+      .join('');
+    parts.push(`
+    <article class="step-card retention-controls">
+      <div class="step-header"><span class="step-number">${step++}</span><div>
+        <h3>Διατήρηση full-res</h3>
+        <p>Παράκαμψη της προεπιλογής πακέτου για αυτή τη συλλογή.</p>
+      </div></div>
+      <div class="step-body">
+        <div class="retention-controls-row">
+          <label class="field-label">Μήνες διατήρησης
+            <select id="retention-months-select">
+              <option value="" ${currentMonths === '' ? 'selected' : ''}>Προεπιλογή πακέτου${retentionMonths == null ? ' (μόνιμα)' : ` (${retentionMonths} μήνες)`}</option>
+              ${monthOptions}
+            </select>
+          </label>
+          <label class="checkbox-label retention-pin-label">
+            <input type="checkbox" id="retention-pinned-checkbox" ${pinned ? 'checked' : ''}>
+            Καρφίτσωμα — χωρίς αρχειοθέτηση
+          </label>
+        </div>
+        <div class="step-actions">
+          <button type="button" class="btn btn-secondary" id="save-retention-btn">Αποθήκευση διατήρησης</button>
+        </div>
+        <div class="notice-slot hidden" id="status-retention" role="status"></div>
+      </div>
+    </article>`);
+  }
+
+  if (!hasFeature('orderFiltering')) {
+    parts.push(`
+    <p class="wizard-upgrade-hint">Θέλεις κάθε πελάτης να βλέπει μόνο τα προϊόντα της παραγγελίας του;
+      <a href="${escapeHtml(upgradeContactHref())}">Επικοινώνησε μαζί μας</a></p>`);
+  }
+
+  w.innerHTML = parts.join('');
 
   document.querySelectorAll('input[name="visibility"]').forEach(r => {
     r.onchange = () => {
-      document.getElementById('tag-picker').classList.toggle('hidden', r.value !== 'selected' || !r.checked);
+      document.getElementById('tag-picker')?.classList.toggle('hidden', r.value !== 'selected' || !r.checked);
       updateReachPreview();
     };
   });
@@ -845,12 +1180,17 @@ function renderWizard(collection, audience = { visibility: 'all', selectedTags: 
   document.getElementById('upload-mapping-btn')?.addEventListener('click', uploadMapping);
   document.getElementById('upload-orders-btn')?.addEventListener('click', uploadOrders);
   document.getElementById('save-visibility-btn')?.addEventListener('click', saveVisibility);
+  document.getElementById('save-retention-btn')?.addEventListener('click', saveRetention);
   document.getElementById('publish-btn')?.addEventListener('click', publishCollection);
   document.getElementById('unpublish-btn')?.addEventListener('click', unpublishCollection);
   bindAdminImageSummary(collection);
   bindFilePickerLabel('images-input');
   bindFilePickerLabel('mapping-input');
   bindFilePickerLabel('orders-input');
+  document.querySelectorAll('input[name="upload-quality"]').forEach((input) => {
+    input.addEventListener('change', () => updateUploadSizeEstimate());
+  });
+  document.getElementById('images-input')?.addEventListener('change', () => updateUploadSizeEstimate());
   updateQuotaRemainingLine();
 }
 
@@ -866,13 +1206,33 @@ async function saveVisibility() {
   renderWizard(collection, audience);
 }
 
+async function saveRetention() {
+  const monthsRaw = document.getElementById('retention-months-select')?.value;
+  const pinned = Boolean(document.getElementById('retention-pinned-checkbox')?.checked);
+  const retentionMonths = monthsRaw === '' || monthsRaw == null ? null : Number(monthsRaw);
+  await api(`/collections/${currentCollectionId}/retention`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ retentionMonths, pinned }),
+  });
+  setStatus('status-retention', 'Η διατήρηση αποθηκεύτηκε.', 'success');
+  const [collection, audience] = await Promise.all([
+    api(`/collections/${currentCollectionId}`),
+    api(`/collections/${currentCollectionId}/audience`),
+  ]);
+  renderWizard(collection, audience);
+}
+
 async function openCollection(id, name) {
   currentCollectionId = id;
   document.getElementById('detail-title').textContent = name;
+  const tagsPromise = hasFeature('tags')
+    ? api('/customers/tags').catch(() => [])
+    : Promise.resolve([]);
   const [collection, audience, tags] = await Promise.all([
     api(`/collections/${id}`),
     api(`/collections/${id}/audience`),
-    api('/customers/tags'),
+    tagsPromise,
   ]);
   allTags = tags;
   document.getElementById('collections-list-view').classList.add('hidden');
@@ -884,30 +1244,61 @@ async function uploadImages() {
   const input = document.getElementById('images-input');
   if (!input?.files.length) return setStatus('status-images', 'Επίλεξε εικόνες.', 'error');
 
-  const files = [...input.files];
-  const total = files.length;
+  const selectedFiles = [...input.files];
+  const total = selectedFiles.length;
+  const optimized = getUploadQualityMode() === 'optimized';
+  const previewBytes = optimized
+    ? estimateOptimizedUploadBytes(selectedFiles)
+    : sumFileBytes(selectedFiles);
+
+  if (previewBytes > IMAGE_LARGE_UPLOAD_BYTES) {
+    const estMinutes = formatMinutesEstimate(previewBytes);
+    const proceed = confirm(
+      `Θα ανεβούν ${total} εικόνες (${fmtBytes(previewBytes)}${optimized ? ' μετά τη βελτιστοποίηση' : ''}). Με τη σύνδεσή σου θα χρειαστούν περίπου ${estMinutes} λεπτά. Μην κλείσεις τη σελίδα.\n\nΗ πρώτη παρτίδα θα εκτιμήσει ακριβέστερα τον χρόνο που απομένει.`
+    );
+    if (!proceed) return;
+  }
+
+  setStatus('status-images', '');
+  setUploadLoading(true, optimized ? `Προετοιμασία 0 από ${total}...` : `Ανέβασμα 0 από ${total}...`, {
+    blockNavigation: true,
+    progress: { current: 0, total },
+    failures: [],
+  });
+
+  let files = selectedFiles;
+  try {
+    files = await prepareImagesForUpload(selectedFiles, {
+      optimized,
+      onProgress: (current, progressTotal) => {
+        setUploadLoading(true, `Προετοιμασία ${current} από ${progressTotal}...`, {
+          blockNavigation: true,
+          progress: { current, total: progressTotal },
+        });
+      },
+    });
+  } catch (err) {
+    setUploadLoading(false, 'Ανέβασμα εικόνων...', { blockNavigation: true });
+    setStatus('status-images', err.message || 'Αποτυχία προετοιμασίας εικόνων.', 'error');
+    return;
+  }
+
   const totalBytes = sumFileBytes(files);
+  updateUploadSizeEstimate(selectedFiles);
 
   const quota = await fetchQuotaStatus();
   applyQuotaBanner(quota);
   if (quota && quota.quotaBytes != null) {
     const estimated = Math.ceil(totalBytes * 1.12);
     if (quota.state === 'full' || estimated > (quota.remainingBytes || 0)) {
+      setUploadLoading(false, 'Ανέβασμα εικόνων...', { blockNavigation: true });
       const msg = quota.state === 'full'
-        ? `Δεν υπάρχει αρκετός χώρος. Χρησιμοποιούνται ${fmtBytes(quota.usedBytes)} από ${fmtBytes(quota.quotaBytes)} διαθέσιμα. Αρχειοθέτησε παλιές συλλογές για να ελευθερώσεις χώρο.`
+        ? `Δεν υπάρχει αρκετός χώρος. Χρησιμοποιούνται ${fmtBytes(quota.usedBytes)} από ${fmtBytes(quota.quotaBytes)}. Αρχειοθέτησε παλιές συλλογές.`
         : `Δεν υπάρχει αρκετός χώρος για αυτό το ανέβασμα (${fmtBytes(totalBytes)}). Διαθέσιμα: ${fmtBytes(quota.remainingBytes || 0)} από ${fmtBytes(quota.quotaBytes)}.`;
       setStatus('status-images', msg, 'error');
       showToast(msg, 'error', 'Όριο χώρου');
       return;
     }
-  }
-
-  if (totalBytes > IMAGE_LARGE_UPLOAD_BYTES) {
-    const estMinutes = Math.max(1, Math.ceil(totalBytes / IMAGE_UPLOAD_PROBE_BPS / 60));
-    const proceed = confirm(
-      `Θα ανεβούν ${total} εικόνες (${fmtBytes(totalBytes)}). Με τη σύνδεσή σου θα χρειαστούν περίπου ${estMinutes} λεπτά. Μην κλείσεις τη σελίδα.\n\nΗ πρώτη παρτίδα θα εκτιμήσει ακριβέστερα τον χρόνο που απομένει.`
-    );
-    if (!proceed) return;
   }
 
   const session = createImageUploadSession(files);
@@ -920,10 +1311,12 @@ async function uploadImages() {
       progress: { current, total: progressTotal },
       failures: batchFailures,
     });
+    if (session.bytesPerSecond) {
+      updateUploadSizeEstimate(selectedFiles, session.bytesPerSecond);
+    }
   };
 
-  setStatus('status-images', '');
-  setUploadLoading(true, `Ανέβασμα 0 από ${total} εικόνες...`, {
+  setUploadLoading(true, `Ανέβασμα 0 από ${total}...`, {
     blockNavigation: true,
     progress: { current: 0, total },
     failures: [],
@@ -935,18 +1328,21 @@ async function uploadImages() {
       if (!batch.length) break;
 
       await uploadBatchWithRetries(batch, session, refreshUi);
+      await updateQuotaRemainingLine();
 
       if (!session.firstBatchDone) {
         session.firstBatchDone = true;
-        if (totalBytes > IMAGE_LARGE_UPLOAD_BYTES && session.bytesPerSecond) {
+        if (session.bytesPerSecond) {
           const refinedMinutes = Math.max(1, Math.ceil(session.remainingBytes() / session.bytesPerSecond / 60));
           batchFailures.push(`Εκτίμηση μετά την πρώτη παρτίδα: περίπου ${refinedMinutes} λεπτά ακόμα.`);
+          updateUploadSizeEstimate(selectedFiles, session.bytesPerSecond);
           refreshUi();
         }
       }
     }
 
     input.value = '';
+    updateUploadSizeEstimate([]);
     await openCollection(currentCollectionId, document.getElementById('detail-title').textContent);
 
     const uploaded = session.completedCount();
@@ -1052,7 +1448,7 @@ async function runBulkCustomerAction(action, extra = {}) {
 
 function getFilteredCustomers() {
   const q = (document.getElementById('customer-search')?.value || '').trim().toLowerCase();
-  const tagFilter = document.getElementById('customer-tag-filter')?.value || '';
+  const tagFilter = hasFeature('tags') ? (document.getElementById('customer-tag-filter')?.value || '') : '';
   const statusFilter = document.getElementById('customer-status-filter')?.value || '';
   return allCustomers.filter((c) => {
     if (statusFilter && c.status !== statusFilter) return false;
@@ -1066,27 +1462,56 @@ function getFilteredCustomers() {
   });
 }
 
+function customersTableColspan() {
+  // check + name + phone + email + status + channel + actions = 7
+  // + access mode + tags when enabled
+  return 7 + (hasFeature('orderFiltering') ? 1 : 0) + (hasFeature('tags') ? 1 : 0);
+}
+
+function customerInitials(name) {
+  const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return '?';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0] || ''}${parts[1][0] || ''}`.toUpperCase();
+}
+
+function channelPill(channel) {
+  if (!channel) return '—';
+  const key = String(channel).toLowerCase();
+  return `<span class="pill pill-channel pill-channel-${escapeHtml(key)}">${escapeHtml(channel)}</span>`;
+}
+
 function renderCustomersTable(customers) {
   const body = document.getElementById('customers-body');
   if (!customers.length) {
-    body.innerHTML = '<tr><td colspan="9" class="subtitle">Δεν βρέθηκαν πελάτες.</td></tr>';
+    body.innerHTML = `<tr><td colspan="${customersTableColspan()}" class="subtitle">Δεν βρέθηκαν πελάτες.</td></tr>`;
     return;
   }
   body.innerHTML = customers.map(c => `
     <tr class="${c.status === 'disabled' ? 'row-disabled' : ''}">
       <td class="col-check"><input type="checkbox" class="customer-select" value="${c.id}" aria-label="Επιλογή ${escapeHtml(c.name)}"></td>
-      <td>${escapeHtml(c.name)}</td>
+      <td>
+        <div class="customer-name-cell">
+          <span class="customer-avatar" aria-hidden="true">${escapeHtml(customerInitials(c.name))}</span>
+          <div class="customer-name-meta">
+            <span class="customer-name">${escapeHtml(c.name)}</span>
+            ${c.erp_code ? `<span class="customer-erp mono">${escapeHtml(c.erp_code)}</span>` : ''}
+          </div>
+        </div>
+      </td>
       <td class="mono">${escapeHtml(c.phone)}</td>
       <td><span class="email-cell"><span class="email-dot email-${escapeHtml(c.email_status || 'unknown')}"></span>${escapeHtml(c.email || '—')}</span></td>
       <td>${statusPill(c.status)}</td>
-      <td>${accessModeSelectHtml(c.id, c.default_access_mode, { compact: true })}</td>
-      <td>${c.last_auth_channel ? `<span class="pill pill-channel">${escapeHtml(c.last_auth_channel)}</span>` : '—'}</td>
-      <td>${renderTagList(c.tags)}</td>
+      ${hasFeature('orderFiltering') ? `<td>${accessModeSelectHtml(c.id, c.default_access_mode, { compact: true })}</td>` : ''}
+      <td>${channelPill(c.last_auth_channel)}</td>
+      ${hasFeature('tags') ? `<td>${renderTagList(c.tags)}</td>` : ''}
       <td>
-        <button class="btn btn-secondary" data-action="resend" data-id="${c.id}">Επαναποστολή</button>
-        <button class="btn btn-secondary" data-action="reset" data-id="${c.id}">Νέος κωδικός</button>
-        <button class="btn btn-secondary" data-action="disable" data-id="${c.id}">Απενεργοποίηση</button>
-        <button class="btn btn-secondary" data-action="delete" data-id="${c.id}">Διαγραφή</button>
+        <div class="row-actions">
+          <button class="btn btn-secondary btn-row" data-action="resend" data-id="${c.id}">Επαναποστολή</button>
+          <button class="btn btn-secondary btn-row" data-action="reset" data-id="${c.id}">Νέος κωδικός</button>
+          <button class="btn btn-secondary btn-row" data-action="disable" data-id="${c.id}">Απενεργοποίηση</button>
+          <button class="btn btn-secondary btn-row btn-row-danger" data-action="delete" data-id="${c.id}">Διαγραφή</button>
+        </div>
       </td>
     </tr>`).join('');
 
@@ -1136,16 +1561,19 @@ function renderCustomersTable(customers) {
 }
 
 async function loadCustomers() {
+  const tagsPromise = hasFeature('tags')
+    ? api('/customers/tags').catch(() => [])
+    : Promise.resolve([]);
   const [customers, tags] = await Promise.all([
     api('/customers'),
-    api('/customers/tags').catch(() => []),
+    tagsPromise,
   ]);
   allCustomers = customers;
   activeCustomersCount = customers.filter(c => c.status === 'active').length;
   allTags = tags;
 
   const tagFilter = document.getElementById('customer-tag-filter');
-  if (tagFilter) {
+  if (tagFilter && hasFeature('tags')) {
     const current = tagFilter.value;
     tagFilter.innerHTML = '<option value="">Όλες οι ετικέτες</option>' +
       tags.map(({ tag }) => `<option value="${escapeHtml(tag)}">${escapeHtml(tag)}</option>`).join('');
@@ -1296,7 +1724,10 @@ async function loadStorage() {
     <div class="storage-chart-section">
       <p class="storage-label">Τάση 30 ημερών</p>
       ${renderStorageChart(storage.snapshots)}
-    </div>`;
+    </div>
+    <p class="storage-retention-line">${escapeHtml(retentionPolicyLine(
+      storage.retentionMonths === undefined ? retentionMonths : storage.retentionMonths
+    ))}</p>`;
   } else {
     const usedPct = storage.disk.usedPercent || 0;
     const progressClass = storageProgressClass(usedPct);
@@ -1318,7 +1749,10 @@ async function loadStorage() {
     <div class="storage-chart-section">
       <p class="storage-label">Τάση 30 ημερών</p>
       ${renderStorageChart(storage.snapshots)}
-    </div>`;
+    </div>
+    <p class="storage-retention-line">${escapeHtml(retentionPolicyLine(
+      storage.retentionMonths === undefined ? retentionMonths : storage.retentionMonths
+    ))}</p>`;
   }
 
   const candidatesEl = document.getElementById('storage-candidates');
@@ -1392,7 +1826,10 @@ document.getElementById('new-customer-form').onsubmit = async (e) => {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       name: fd.get('name'), phone: fd.get('phone'), email: fd.get('email'),
-      erpCode: fd.get('erpCode'), defaultAccessMode: fd.get('defaultAccessMode'),
+      erpCode: fd.get('erpCode'),
+      defaultAccessMode: hasFeature('orderFiltering')
+        ? (fd.get('defaultAccessMode') || 'full_access')
+        : 'full_access',
       preferredChannel: fd.get('preferredChannel'),
       sendCode: fd.get('sendCode') === 'on',
     }),
@@ -1492,11 +1929,13 @@ document.getElementById('bulk-tags-apply-btn')?.addEventListener('click', async 
   loadCustomers();
 });
 
-applyBranding();
+applyBranding().then(() => {
+  applyFeatureUi();
+  loadCustomers();
+});
 loadCurrentAdmin().then(() => applyAdminNavPermissions());
 refreshQuotaBanner();
 loadCollections();
-loadCustomers();
 
 document.getElementById('logout-btn')?.addEventListener('click', async () => {
   await fetch('/api/logout', { method: 'POST', credentials: 'include' });

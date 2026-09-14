@@ -6,14 +6,22 @@
   <title>Σύνδεση</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/admin/style.css">
 </head>
 <body>
   <div class="login-page">
-    <div class="login-card">
-      <h1 id="login-title">Kollekta</h1>
-      <p class="subtitle" id="login-subtitle">Σύνδεση διαχειριστή</p>
+    <div class="login-shell">
+      <div class="login-phase">
+        <span class="login-phase-dot" aria-hidden="true"></span>
+        <span>Πύλη ασφαλείας</span>
+      </div>
+      <div class="login-card">
+        <div class="login-brand-block">
+          <img class="login-lockup" id="login-logo" src="/shared/kollekta-lockup.svg" alt="Kollekta">
+          <h1 id="login-title" class="visually-hidden">Kollekta</h1>
+          <p class="subtitle" id="login-subtitle">Σύνδεση διαχειριστή</p>
+        </div>
 
       <form id="login-form">
         <label for="email">Email</label>
@@ -49,6 +57,7 @@
         <button type="button" class="link-btn" id="back-forgot-btn">← Πίσω</button>
       </form>
     </div>
+    </div>
   </div>
   <script>
     let resetAvailable = false;
@@ -62,15 +71,21 @@
     }
 
     fetch('/api/branding').then(r => r.json()).then(b => {
-      document.documentElement.style.setProperty('--accent', b.accentColor || '#8b7bf0');
+      document.documentElement.style.setProperty('--accent', b.accentColor || '#2563EB');
       if (b.storageWarnPercent) {
         document.documentElement.style.setProperty('--storage-warn-percent', b.storageWarnPercent);
       }
       if (b.storageCriticalPercent) {
         document.documentElement.style.setProperty('--storage-critical-percent', b.storageCriticalPercent);
       }
-      document.getElementById('login-title').textContent = b.companyName || 'Kollekta';
-      document.title = (b.companyName || 'Kollekta') + ' — Σύνδεση';
+      const title = b.companyName || 'Kollekta';
+      document.getElementById('login-title').textContent = title;
+      const loginLogo = document.getElementById('login-logo');
+      if (loginLogo && b.logoPath) {
+        loginLogo.src = b.logoPath;
+        loginLogo.alt = title;
+      }
+      document.title = title + ' — Σύνδεση';
       resetAvailable = Boolean(b.adminResetAvailable);
       document.getElementById('forgot-btn').classList.toggle('hidden', !resetAvailable);
     });

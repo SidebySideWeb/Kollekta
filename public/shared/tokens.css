@@ -1,50 +1,110 @@
-/* Atelier Dark design tokens — see design/DESIGN.md */
+/* Gallery Frame Architecture — shared design tokens (Roboto for Greek) */
 
 :root {
-  --unit: 8px;
-  --radius-sm: 0.25rem;
-  --radius: 0.5rem;
-  --radius-md: 0.75rem;
-  --radius-lg: 1rem;
-  --radius-xl: 1.5rem;
-  --radius-full: 9999px;
+  /* ── Brand primitives ── */
+  --deep-slate: #0F172A;
+  --on-surface: #0B1C30;
+  --cobalt: #2563EB;
+  --primary: #004AC6;
+  --sky-cyan: #0284C7;
+  --white: #FFFFFF;
+  --studio-mist: #F8FAFC;
+  --canvas-mist: #F8FAFC;
+  --slate-hairline: #E2E8F0;
+  --muted-caption: #64748B;
+  --body-ink: #334155;
+  --secondary: #565E74;
 
-  --background: #131319;
-  --on-background: #e4e1ea;
-  --surface-container-lowest: #0e0e13;
-  --surface-container-low: #1b1b21;
-  --surface-container: #1f1f25;
-  --surface-container-high: #2a2930;
-  --surface-container-highest: #34343b;
-  --surface-variant: #34343b;
-  --on-surface: #e4e1ea;
-  --on-surface-variant: #c9c4d5;
-  --outline: #928f9e;
-  --outline-variant: #484553;
-  --error: #ffb4ab;
-  --on-error: #690005;
-  --error-container: #93000a;
-  --primary-fixed-dim: #c8bfff;
-  --tertiary-fixed-dim: #f5be46;
+  --status-positive-container: #FFDF93;
+  --status-positive: #765B00;
+  --status-danger-container: #FFDAD6;
+  --status-danger: #BA1A1A;
+  --error-container: #FFDAD6;
+  --on-error-container: #93000A;
+
+  --structural: var(--deep-slate);
+  --selection-ring: var(--sky-cyan);
+
+  /* ── Compat surface aliases ── */
+  --background: var(--studio-mist);
+  --on-background: var(--on-surface);
+  --surface-container-lowest: var(--white);
+  --surface-container-low: #EFF4FF;
+  --surface-container: #E5EEFF;
+  --surface-container-high: #DCE9FF;
+  --surface-container-highest: #D3E4FE;
+  --surface-variant: #D3E4FE;
+  --on-surface-variant: #434655;
+  --outline: #737686;
+  --outline-variant: var(--slate-hairline);
+  --error: var(--status-danger);
+  --on-error: var(--white);
+  --primary-fixed-dim: #B4C5FF;
+  --tertiary-fixed-dim: #93CCFF;
 
   /* White-label primary — overridden at runtime */
-  --accent: #8b7bf0;
-  --on-accent: #131319;
+  --accent: var(--cobalt);
+  --on-accent: var(--white);
 
-  --success: #5cb896;
-  --warning: #d9a441;
-  --danger: #d97070;
+  --success: #15803D;
+  --warning: var(--status-positive);
+  --danger: var(--status-danger);
 
-  --font-sans: 'Roboto', system-ui, sans-serif;
+  /* ── Typography — Roboto (full Greek coverage) ── */
+  --font-sans: 'Roboto', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'Roboto Mono', ui-monospace, Menlo, Consolas, monospace;
 
-  --touch-min: 44px;
-  --container-margin: 24px;
+  /* ── Radius (Gallery Frame: sharp tailored) ── */
+  --radius-sm: 2px;
+  --radius: 4px;
+  --radius-md: 4px;
+  --radius-lg: 8px;
+  --radius-xl: 8px;
+  --radius-full: 9999px;
+
+  /* ── Spacing (8px rhythm + 4px micro) ── */
+  --unit: 8px;
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+
   --gutter: 16px;
+  --gutter-desktop: 24px;
+  --container-margin: 16px;
+  --margin-desktop: 32px;
+
+  --touch-min: 36px;
+  --control-height: 36px;
   --safe-area-top: 44px;
   --safe-area-bottom: 34px;
 
-  /* Storage progress thresholds — set from config via JS */
+  /* ── Elevation ── */
+  --shadow-0: none;
+  --shadow-1: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px -1px rgba(15, 23, 42, 0.02);
+  --shadow-2: 0 4px 12px 0 rgba(15, 23, 42, 0.06), 0 1px 3px 0 rgba(15, 23, 42, 0.04);
+  --shadow-3: 0 12px 32px -4px rgba(15, 23, 42, 0.12);
+
+  --header-bg: rgba(255, 255, 255, 0.95);
+  --header-blur: blur(16px);
+  --header-shadow: 0 1px 8px rgba(0, 0, 0, 0.04);
+
+  --focus-ring: 0 0 0 2px color-mix(in srgb, var(--sky-cyan) 30%, transparent);
+
   --storage-warn-percent: 75;
   --storage-critical-percent: 90;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --gutter: 24px;
+    --container-margin: 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --container-margin: 32px;
+  }
 }

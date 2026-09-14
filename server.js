@@ -6,7 +6,7 @@ const cookieParser = require('cookie-parser');
 const config = require('./config');
 const adminRoutes = require('./routes/admin');
 const customerRoutes = require('./routes/customer');
-const { cleanupOldAttempts } = require('./lib/rateLimit');
+const { cleanupOldAttempts, checkAdminLoginAllowed, recordAttempt } = require('./lib/rateLimit');
 const { startRetentionJob } = require('./lib/retention');
 const { takeSnapshot } = require('./lib/storage');
 const { cleanupTmpDir } = require('./lib/uploadTmp');
@@ -25,19 +25,34 @@ ensureBootstrapAdmin();
 const app = express();
 const PORT = process.env.PORT || 3000;
 const ADMIN_COOKIE = 'pd_admin';
+const ADMIN_SESSION_MAX_AGE_MS = 12 * 60 * 60 * 1000;
 const adminDir = path.join(__dirname, 'public', 'admin');
 const appDir = path.join(__dirname, 'public', 'app');
 const sharedDir = path.join(__dirname, 'public', 'shared');
 const logoDir = path.join(__dirname, 'public', 'logo');
 const tokensCss = path.join(sharedDir, 'tokens.css');
 
-function adminCookieOptions() {
+function requestIsHttps(req) {
+  if (process.env.NODE_ENV === 'production') return true;
+  const proto = String(req.get('x-forwarded-proto') || '')
+    .split(',')[0]
+    .trim()
+    .toLowerCase();
+  return proto === 'https';
+}
+
+function adminCookieOptions(req) {
   return {
     httpOnly: true,
     signed: true,
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    secure: requestIsHttps(req),
+    maxAge: ADMIN_SESSION_MAX_AGE_MS,
   };
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 for (const dir of [logoDir, sharedDir, path.join(__dirname, 'data'), path.join(__dirname, 'uploads'), path.join(__dirname, 'tmp')]) {
@@ -100,22 +115,32 @@ app.get('/api/admin/me', requireAdmin, (req, res) => {
   });
 });
 
-app.post('/api/login', (req, res) => {
+app.post('/api/login', async (req, res) => {
+  const ip = req.ip || '';
+  const limit = checkAdminLoginAllowed(ip);
+  if (!limit.allowed) {
+    return res.status(429).json({
+      error: 'Πολλές προσπάθειες. Δοκίμασε ξανά αργότερα.',
+    });
+  }
+
   const email = String(req.body.email || '');
   const password = String(req.body.password || '');
   const admin = authenticateAdmin(email, password);
   if (!admin) {
+    recordAttempt({ phone: null, ip, kind: 'admin_login', success: false });
+    console.warn(`[admin_login] failed ip=${ip}`);
+    await sleep(300);
     return res.status(401).json({ error: 'Λάθος email ή κωδικός πρόσβασης.' });
   }
-  res.cookie(ADMIN_COOKIE, String(admin.id), {
-    ...adminCookieOptions(),
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
+
+  recordAttempt({ phone: null, ip, kind: 'admin_login', success: true });
+  res.cookie(ADMIN_COOKIE, String(admin.id), adminCookieOptions(req));
   res.json({ ok: true, admin });
 });
 
 app.post('/api/logout', (req, res) => {
-  res.clearCookie(ADMIN_COOKIE, adminCookieOptions());
+  res.clearCookie(ADMIN_COOKIE, adminCookieOptions(req));
   res.json({ ok: true });
 });
 
@@ -136,7 +161,7 @@ app.post('/api/admin-auth/reset', (req, res) => {
   if (!result.ok) {
     return res.status(400).json({ error: result.error });
   }
-  res.clearCookie(ADMIN_COOKIE, adminCookieOptions());
+  res.clearCookie(ADMIN_COOKIE, adminCookieOptions(req));
   res.json({ ok: true, message: 'Ο κωδικός ενημερώθηκε. Συνδέσου με τον νέο κωδικό.' });
 });
 

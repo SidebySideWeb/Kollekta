@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+
+<html lang="el"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"outline":"#737686","on-secondary-fixed":"#131b2e","slate-hairline":"#E2E8F0","primary-container":"#2563eb","surface-tint":"#0053db","on-primary-fixed":"#00174b","outline-variant":"#c3c6d7","on-error":"#ffffff","on-surface-variant":"#434655","inverse-on-surface":"#eaf1ff","tertiary-container":"#0073ae","on-error-container":"#93000a","secondary-fixed-dim":"#bec6e0","status-danger":"#BA1A1A","secondary":"#565e74","primary-fixed":"#dbe1ff","surface-dim":"#cbdbf5","status-positive-container":"#FFDF93","surface-white":"#FFFFFF","secondary-container":"#dae2fd","primary-fixed-dim":"#b4c5ff","canvas-mist":"#F8FAFC","primary":"#004ac6","on-secondary-container":"#5c647a","error-container":"#ffdad6","surface":"#f8f9ff","on-tertiary-fixed-variant":"#004b73","on-secondary-fixed-variant":"#3f465c","on-secondary":"#ffffff","surface-container-low":"#eff4ff","tertiary-fixed-dim":"#93ccff","surface-container-highest":"#d3e4fe","on-surface":"#0b1c30","surface-variant":"#d3e4fe","error":"#ba1a1a","on-tertiary-fixed":"#001d31","status-positive":"#765B00","surface-bright":"#f8f9ff","secondary-fixed":"#dae2fd","tertiary":"#005a89","on-tertiary-container":"#e7f2ff","surface-container-lowest":"#ffffff","on-primary":"#ffffff","surface-container-high":"#dce9ff","on-primary-fixed-variant":"#003ea8","on-primary-container":"#eeefff","body-ink":"#334155","background":"#f8f9ff","inverse-surface":"#213145","status-danger-container":"#FFDAD6","surface-container":"#e5eeff","on-tertiary":"#ffffff","on-background":"#0b1c30","inverse-primary":"#b4c5ff","tertiary-fixed":"#cce5ff"},borderRadius:{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},spacing:{"gutter-desktop":"1.5rem","space-lg":"1.5rem","space-xl":"2rem","gutter":"1rem","margin-desktop":"2rem","margin":"1rem","space-md":"1rem","space-xs":"0.25rem","space-sm":"0.5rem"},fontFamily:{"label-tag":["Public Sans"],"title-md":["Public Sans"],"display-hero-mobile":["Public Sans"],"headline-md":["Public Sans"],"body-default":["Public Sans"],"headline-lg":["Public Sans"],"label-eyebrow":["Public Sans"],"headline-sm":["Public Sans"],"body-editorial":["Public Sans"],"body-micro":["Public Sans"],"label-button":["Public Sans"],"display-hero":["Public Sans"]},fontSize:{"label-tag":["10px",{"lineHeight":"14px","letterSpacing":"0.025em","fontWeight":"700"}],"title-md":["15px",{"lineHeight":"22px","letterSpacing":"-0.01em","fontWeight":"500"}],"display-hero-mobile":["24px",{"lineHeight":"32px","letterSpacing":"-0.02em","fontWeight":"700"}],"headline-md":["20px",{"lineHeight":"28px","letterSpacing":"-0.02em","fontWeight":"600"}],"body-default":["13px",{"lineHeight":"20px","letterSpacing":"0","fontWeight":"400"}],"headline-lg":["28px",{"lineHeight":"36px","letterSpacing":"-0.025em","fontWeight":"600"}],"label-eyebrow":["11px",{"lineHeight":"16px","letterSpacing":"0.05em","fontWeight":"700"}],"headline-sm":["18px",{"lineHeight":"24px","letterSpacing":"-0.02em","fontWeight":"700"}],"body-editorial":["14px",{"lineHeight":"21px","letterSpacing":"0","fontWeight":"400"}],"body-micro":["12px",{"lineHeight":"18px","letterSpacing":"0","fontWeight":"400"}],"label-button":["12px",{"lineHeight":"16px","letterSpacing":"0.01em","fontWeight":"600"}],"display-hero":["30px",{"lineHeight":"38px","letterSpacing":"-0.025em","fontWeight":"700"}]}}}}</script></head><body class="bg-canvas-mist text-body-ink font-body-default text-body-default antialiased min-h-screen flex flex-col"><header class="fixed top-0 inset-x-0 z-50 bg-surface-white/95 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 max-w-7xl mx-auto px-gutter flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-md shrink-0"><div class="flex items-center gap-space-sm"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1UeNqfHxSAZx7GUKXA5poUsySyyiUC8fXQrVsHV7MvrP165UN6RNA1nTa2WqVa6GOog7bUGOf9nEENeMVwIGdf-lxZ4AGoIVoPDgs151aISJAtwL1AZZO0lOrOIvhUXm3ex38hFlCBBgvrOjeC_9TJrA2KN8tlSC77rggLowERp3zc7QMlGbad7Y1K1b7Nxusbu2HxM5eyjH7gjruCYcAJ2A2fZ1TuiU-nEMvaRSlnxCBKi6BQm24UEY6piH-txF4yY8fBHUNh7"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm tracking-tight text-on-surface leading-none">KOLLEKTA</span><span class="font-label-eyebrow text-label-eyebrow text-secondary uppercase leading-none mt-space-xs">B2B MEDIA SUITE</span></div></div></div><nav class="hidden md:flex items-center gap-space-lg h-full" data-active-classes="text-primary font-label-button border-b-2 border-primary"><a class="inline-flex items-center h-full px-space-xs text-on-surface-variant font-body-default text-body-default hover:text-on-surface transition-colors" data-path="collections" href="#">Συλλογές</a><a class="inline-flex items-center h-full px-space-xs text-on-surface-variant font-body-default text-body-default hover:text-on-surface transition-colors" data-path="clients" href="#">Πελάτες</a><a class="inline-flex items-center h-full px-space-xs text-on-surface-variant font-body-default text-body-default hover:text-on-surface transition-colors" data-path="messages" href="#">Μηνύματα</a><a aria-current="page" class="inline-flex items-center h-full px-space-xs transition-colors text-primary font-label-button border-b-2 border-primary" data-path="storage" href="#">Χώρος</a><div class="inline-flex items-center gap-space-xs h-full"><a class="inline-flex items-center h-full px-space-xs text-on-surface-variant font-body-default text-body-default hover:text-on-surface transition-colors" data-path="administrators" href="#">Διαχειριστές</a><span class="bg-secondary-container text-on-secondary-fixed-variant font-label-tag text-label-tag px-space-xs py-0.5 rounded-full">Superadmin</span></div></nav><div class="flex items-center gap-space-sm shrink-0"><button class="inline-flex items-center gap-space-xs px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface font-label-button text-label-button transition-colors" type="button"><span class="material-symbols-outlined text-body-editorial">key</span><span>Κωδικός</span></button><button class="inline-flex items-center gap-space-xs px-space-sm py-1.5 rounded-lg text-error hover:bg-error-container hover:text-on-error-container font-label-button text-label-button transition-colors" type="button"><span class="material-symbols-outlined text-body-editorial">logout</span><span>Αποσύνδεση</span></button></div></div><div class="bg-status-positive-container text-status-positive py-space-xs shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="max-w-7xl mx-auto px-gutter flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-body-editorial">cloud_queue</span><span class="font-body-default text-body-default">Χώρος: <strong>85% σε χρήση</strong> — αρχειοθετήστε παλιές συλλογές για βέλτιστη απόδοση.</span></div><button aria-label="Dismiss" class="p-space-xs rounded-full hover:bg-surface-white/40 text-status-positive transition-colors" type="button"><span class="material-symbols-outlined text-body-default">close</span></button></div></div></header><main class="w-full pt-24 max-w-7xl mx-auto px-gutter flex-1"><div class="flex flex-col w-full pb-space-xl">
+<!-- Interactive View Switcher Bar -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-md mb-space-lg bg-surface-white p-space-sm rounded-xl shadow-sm">
+<div class="flex items-center gap-space-xs p-1 bg-surface-container-low rounded-lg">
+<button class="flex items-center gap-space-xs px-space-md py-2 rounded-lg font-label-button text-label-button transition-all bg-surface-white text-on-surface shadow-sm" id="tab-storage" onclick="switchView('storage')" type="button">
+<span class="material-symbols-outlined text-[18px]">cloud_sync</span>
+<span>Χώρος Αποθήκευσης</span>
+</button>
+<button class="flex items-center gap-space-xs px-space-md py-2 rounded-lg font-label-button text-label-button transition-all text-on-surface-variant hover:text-on-surface" id="tab-admins" onclick="switchView('admins')" type="button">
+<span class="material-symbols-outlined text-[18px]">manage_accounts</span>
+<span>Διαχειριστές</span>
+<span class="bg-secondary-container text-on-secondary-fixed-variant font-label-tag text-label-tag px-1.5 py-0.5 rounded-full ml-1">2 Νέοι</span>
+</button>
+</div>
+<!-- Quick Action / Status Meta -->
+<div class="flex items-center gap-space-sm self-end md:self-auto">
+<span class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container text-body-ink font-body-micro text-body-micro">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+        AWS S3 Frankfurt (eu-central-1)
+      </span>
+<button class="inline-flex items-center gap-space-xs px-space-sm py-1.5 rounded-lg bg-surface-container text-on-surface font-label-button text-label-button hover:bg-surface-container-high transition-colors" onclick="openPasswordModal()" type="button">
+<span class="material-symbols-outlined text-[16px]">lock_reset</span>
+<span>Αλλαγή Κωδικού</span>
+</button>
+</div>
+</div>
+<!-- SECTION 1: STORAGE DASHBOARD -->
+<div class="flex flex-col gap-space-lg" id="view-storage">
+<!-- Header Block -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-space-md">
+<div>
+<div class="flex items-center gap-space-xs font-label-eyebrow text-label-eyebrow text-secondary uppercase mb-1 tracking-wider">
+<span>KOLLEKTA ASSET PIPELINE</span>
+<span>•</span>
+<span class="text-primary font-bold">LIVE TELEMETRY</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Χώρος Αποθήκευσης</h1>
+<p class="font-body-editorial text-body-editorial text-secondary mt-1">Επισκόπηση χωρητικότητας, διατήρηση αρχείων και εκκαθάριση</p>
+</div>
+<div class="flex items-center gap-space-sm">
+<button class="inline-flex items-center gap-space-xs px-space-md h-9 bg-surface-white hover:bg-surface-container-low text-body-ink font-label-button text-label-button rounded-lg shadow-sm transition-all" type="button">
+<span class="material-symbols-outlined text-[16px]">history</span>
+<span>Ιστορικό Snapshot</span>
+</button>
+<button class="inline-flex items-center gap-space-xs px-space-md h-9 bg-primary-container text-on-primary font-label-button text-label-button rounded-lg hover:opacity-90 shadow-sm transition-all" type="button">
+<span class="material-symbols-outlined text-[16px]">sync</span>
+<span>Επανυπολογισμός</span>
+</button>
+</div>
+</div>
+<!-- Usage Metrics & Bento Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-md">
+<!-- Main Metric Gauge Card -->
+<div class="lg:col-span-8 bg-surface-white p-space-lg rounded-xl shadow-sm flex flex-col justify-between relative overflow-hidden">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-sm mb-space-md">
+<div>
+<span class="font-label-eyebrow text-label-eyebrow text-secondary uppercase">Συνολικη Χωρητικοτητα</span>
+<div class="flex items-baseline gap-space-xs mt-1">
+<span class="font-display-hero text-display-hero text-on-surface font-bold">31.4 GB</span>
+<span class="font-headline-sm text-headline-sm text-secondary">/ 40 GB</span>
+<span class="ml-2 font-label-tag text-label-tag px-2 py-0.5 rounded-full bg-status-positive-container text-status-positive font-semibold">78.5% σε χρήση</span>
+</div>
+</div>
+<div class="text-right">
+<span class="font-body-micro text-body-micro text-secondary block">Υπολειπόμενο quota: <strong class="text-on-surface">8.6 GB</strong></span>
+<span class="font-label-tag text-label-tag text-status-danger font-semibold">Προβλεπόμενος κορεσμός: 18 ημέρες</span>
+</div>
+</div>
+<!-- Tiered Progress Bar -->
+<div class="space-y-space-xs my-space-md">
+<div class="w-full h-3.5 bg-surface-container-low rounded-full overflow-hidden flex shadow-inner">
+<!-- Full RAW / TIFF: 58% -->
+<div class="h-full bg-primary transition-all duration-700" style="width: 58%;" title="RAW &amp; TIFF Master Assets: 23.2 GB"></div>
+<!-- Optimized Web: 16% -->
+<div class="h-full bg-tertiary-container transition-all duration-700" style="width: 16%;" title="Optimized Web: 6.4 GB"></div>
+<!-- Thumbnails & Cache: 4.5% -->
+<div class="h-full bg-status-positive transition-all duration-700" style="width: 4.5%;" title="Thumbnails &amp; Cache: 1.8 GB"></div>
+<!-- Free Space: 21.5% -->
+<div class="h-full bg-transparent flex-1" title="Ελεύθερο: 8.6 GB"></div>
+</div>
+<!-- Segment Legend -->
+<div class="flex flex-wrap items-center justify-between pt-1 font-body-micro text-body-micro text-secondary">
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-sm bg-primary"></span>
+<span>Full RAW / TIFF (23.2 GB)</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-sm bg-tertiary-container"></span>
+<span>Web Delivery WebP (6.4 GB)</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-sm bg-status-positive"></span>
+<span>Thumbnails &amp; DINA (1.8 GB)</span>
+</div>
+<div class="flex items-center gap-1.5 text-outline">
+<span class="w-2.5 h-2.5 rounded-sm bg-surface-container-high"></span>
+<span>Διαθέσιμο (8.6 GB)</span>
+</div>
+</div>
+</div>
+<!-- Retention Policy Banner inside card -->
+<div class="mt-space-md pt-space-md bg-surface-container-low/60 -mx-space-lg -mb-space-lg p-space-md flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-primary text-body-editorial mt-0.5 shrink-0">policy</span>
+<div class="font-body-default text-body-default text-on-surface">
+<strong class="font-medium">Πολιτική Διατήρησης (Retention Policy):</strong>
+<span class="text-secondary ml-1">Τα αρχεία πλήρους ανάλυσης (RAW/TIFF) διατηρούνται αυτόματα για 6 μήνες. Μετά το πέρας, οι συλλογές παραμένουν διαθέσιμες σε υπερ-βελτιστοποιημένη ανάλυση Web χωρίς απώλεια οπτικής ποιότητας για τους αγοραστές B2B.</span>
+</div>
+</div>
+</div>
+<!-- Trend Sparkline 30-day mini chart -->
+<div class="lg:col-span-4 bg-surface-white p-space-lg rounded-xl shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-space-xs">
+<span class="font-label-eyebrow text-label-eyebrow text-secondary uppercase">30-DAY USAGE TREND</span>
+<span class="font-label-tag text-label-tag text-status-danger bg-status-danger-container/60 px-1.5 py-0.5 rounded-full">+3.8 GB / μήνα</span>
+</div>
+<h3 class="font-title-md text-title-md text-on-surface font-semibold">Ρυθμός Κατανάλωσης</h3>
+<p class="font-body-micro text-body-micro text-secondary">Αύξηση λόγω του upload της συλλογής Haute Joaillerie 2024</p>
+</div>
+<!-- Inline SVG Area Chart -->
+<div class="my-space-sm relative">
+<svg class="w-full h-28 overflow-visible" fill="none" preserveaspectratio="none" viewbox="0 0 320 100">
+<defs>
+<lineargradient id="storageGradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#004ac6" stop-opacity="0.25"></stop>
+<stop offset="100%" stop-color="#004ac6" stop-opacity="0.0"></stop>
+</lineargradient>
+</defs>
+<!-- Grid Lines -->
+<line stroke="#E2E8F0" stroke-dasharray="3 3" x1="0" x2="320" y1="20" y2="20"></line>
+<line stroke="#E2E8F0" stroke-dasharray="3 3" x1="0" x2="320" y1="55" y2="55"></line>
+<line stroke="#E2E8F0" stroke-dasharray="3 3" x1="0" x2="320" y1="90" y2="90"></line>
+<!-- Fill Curve -->
+<path d="M0 86 C 45 84, 80 78, 120 72 C 165 65, 200 68, 240 50 C 275 35, 295 24, 320 18 L 320 100 L 0 100 Z" fill="url(#storageGradient)"></path>
+<!-- Stroke Curve -->
+<path d="M0 86 C 45 84, 80 78, 120 72 C 165 65, 200 68, 240 50 C 275 35, 295 24, 320 18" stroke="#004ac6" stroke-linecap="round" stroke-width="2.5"></path>
+<!-- Trend Markers -->
+<circle cx="120" cy="72" fill="#ffffff" r="3" stroke="#004ac6" stroke-width="2"></circle>
+<circle cx="240" cy="50" fill="#ffffff" r="3" stroke="#004ac6" stroke-width="2"></circle>
+<circle cx="320" cy="18" fill="#004ac6" r="4"></circle>
+</svg>
+</div>
+<div class="flex items-center justify-between text-secondary font-body-micro text-body-micro pt-space-xs">
+<span>01 Οκτ (27.6 GB)</span>
+<span>15 Οκτ (29.2 GB)</span>
+<span class="text-on-surface font-semibold">Σήμερα (31.4 GB)</span>
+</div>
+</div>
+</div>
+<!-- Purge Candidates Alert / Action Banner -->
+<div class="bg-status-positive-container/30 rounded-xl p-space-md shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-space-md">
+<div class="flex items-start gap-space-md">
+<div class="w-10 h-10 rounded-lg bg-status-positive-container text-status-positive flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[24px]">auto_delete</span>
+</div>
+<div>
+<div class="flex items-center gap-space-xs">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Προς αρχειοθέτηση</span>
+<span class="font-label-tag text-label-tag px-2 py-0.5 rounded-full bg-status-positive-container text-status-positive font-bold">2 ΥΠΟΨΗΦΙΕΣ ΣΥΛΛΟΓΕΣ</span>
+</div>
+<p class="font-body-default text-body-default text-body-ink mt-0.5">
+            2 παλιές συλλογές (<span class="font-medium text-on-surface">AW23 Campaign</span>, <span class="font-medium text-on-surface">Pre-Fall 23</span>) πλησιάζουν το όριο διατήρησης 6 μηνών. Εκτιμώμενο όφελος χώρου: <strong class="text-primary font-semibold">12.8 GB</strong>
+</p>
+</div>
+</div>
+<div class="flex items-center gap-space-sm shrink-0 w-full md:w-auto">
+<button class="flex-1 md:flex-none px-space-sm py-2 rounded-lg bg-surface-white text-body-ink font-label-button text-label-button hover:bg-surface-container-low transition-colors shadow-sm" type="button">
+          Έλεγχος Αρχείων
+        </button>
+<button class="flex-1 md:flex-none inline-flex items-center justify-center gap-space-xs px-space-md py-2 bg-on-surface text-surface-white font-label-button text-label-button rounded-lg hover:opacity-95 shadow-sm transition-all" onclick="triggerBatchArchive()" type="button">
+<span class="material-symbols-outlined text-[16px]">archive</span>
+<span>Μαζική Αρχειοθέτηση (12.8 GB)</span>
+</button>
+</div>
+</div>
+<!-- Per-collection Breakdown Table -->
+<div class="bg-surface-white rounded-xl shadow-sm overflow-hidden flex flex-col">
+<div class="p-space-md flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm bg-surface-white">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Συλλογές κατά μέγεθος</h2>
+<p class="font-body-micro text-body-micro text-secondary">Ανάλυση χρήσης ανά tier ποιότητας και δυνατότητα καθαρισμού RAW masters</p>
+</div>
+<div class="flex items-center gap-space-xs">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-2.5 top-2 text-secondary text-[16px]">search</span>
+<input class="pl-8 pr-3 py-1.5 h-8 bg-surface-container-low rounded-lg font-body-micro text-body-micro text-on-surface placeholder:text-secondary focus:outline-none focus:bg-surface-white shadow-inner" placeholder="Αναζήτηση συλλογής..." type="text"/>
+</div>
+<button class="p-1.5 rounded-lg bg-surface-container-low text-on-surface-variant hover:text-on-surface" type="button">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+</button>
+</div>
+</div>
+<!-- Table View -->
+<div class="overflow-x-auto">
+<table class="w-full text-left font-body-default text-body-default border-collapse">
+<thead>
+<tr class="bg-surface-container-low text-secondary font-label-eyebrow text-label-eyebrow uppercase tracking-wider">
+<th class="py-3 px-space-md">Συλλογή / Lookbook</th>
+<th class="py-3 px-space-sm text-center">Εικόνες</th>
+<th class="py-3 px-space-sm">Full (RAW/TIFF)</th>
+<th class="py-3 px-space-sm">Web (WebP)</th>
+<th class="py-3 px-space-sm">Thumb &amp; Previews</th>
+<th class="py-3 px-space-sm font-bold text-on-surface">Σύνολο</th>
+<th class="py-3 px-space-md text-right">Ενέργεια</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-low font-body-default">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-lowest/80 transition-colors">
+<td class="py-3.5 px-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high overflow-hidden shrink-0">
+<img class="w-full h-full object-cover" data-alt="High-end studio fashion lookbook with model in beige trench coat against raw concrete minimalist interior warm daylight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCceXOJHAYX8Jo3mgbGGnfqMpHlVlemjmU32ymSIPO1gRQwo7JXmaylYIegsEcrDwj02dMC2PkuQ1ic12D2jQihbKY1RWMmQV5Rm9alYew3dp6uqDGQrnMDwlNdlGOBO-KNrAJwKNfeuZiYhqGjzokEyOwCoCTd1dwWa5Bs9O_R8nZHoo6g78KU5bjOnwwZEDUHvraiDy7ig67Dy__7ng0dLI57heY2rLGPGGuwNrhVFG-BnUTfk26U"/>
+</div>
+<div class="min-w-0">
+<span class="font-title-md text-title-md text-on-surface font-semibold block truncate">SS24 Lookbook Milano</span>
+<span class="font-body-micro text-body-micro text-secondary">Δημοσιεύτηκε 12 μέρες πριν • Active Wholesale</span>
+</div>
+</div>
+</td>
+<td class="py-3.5 px-space-sm text-center font-mono text-secondary">342</td>
+<td class="py-3.5 px-space-sm font-mono text-on-surface">4.20 GB</td>
+<td class="py-3.5 px-space-sm font-mono text-secondary">850 MB</td>
+<td class="py-3.5 px-space-sm font-mono text-secondary">45 MB</td>
+<td class="py-3.5 px-space-sm font-mono font-bold text-on-surface">5.10 GB</td>
+<td class="py-3.5 px-space-md text-right">
+<button class="inline-flex items-center gap-1 px-space-sm py-1 rounded-lg bg-surface-container hover:bg-surface-container-high text-body-ink font-label-button text-label-button transition-colors" type="button">
+<span class="material-symbols-outlined text-[14px]">archive</span>
+<span>Αρχειοθέτηση</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 (Purge candidate highlighted) -->
+<tr class="bg-status-positive-container/10 hover:bg-status-positive-container/20 transition-colors">
+<td class="py-3.5 px-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high overflow-hidden shrink-0">
+<img class="w-full h-full object-cover" data-alt="Luxury fashion autumn winter campaign editorial shot dark moody cinematic lighting deep emerald knitwear" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAUmiHyS_SE3yl7lxQo1z92c8vqxI33AVLJHZ8CVHRBxjCBC08M4pwdLX9idq3wKIy2umuiNxv0XkfayrsZ_nfzkkomZ--TD_3UgjmStcfLe71q9nPXah3tNBj4ieUrDHTPzbjxcdUlaJiHeu7spJ8dHwI0Tkzu5zPXnJPiccBLobWLvNPGVSkDcYEbprYMp0UqpWnV6YgIVJ9RmpSLKXIRpC8a9Oc3hpQMH5QTTzx18AthcebvCDi1"/>
+</div>
+<div class="min-w-0">
+<div class="flex items-center gap-1.5">
+<span class="font-title-md text-title-md text-on-surface font-semibold truncate">AW23 Campaign &amp; Showroom</span>
+<span class="font-label-tag text-label-tag px-1.5 py-0.2 rounded bg-status-positive-container text-status-positive font-bold">&gt;6 Μηνών</span>
+</div>
+<span class="font-body-micro text-body-micro text-secondary">Τελευταία πρόσβαση: 45 ημέρες πριν</span>
+</div>
+</div>
+</td>
+<td class="py-3.5 px-space-sm text-center font-mono text-secondary">512</td>
+<td class="py-3.5 px-space-sm font-mono text-status-danger font-semibold">6.80 GB</td>
+<td class="py-3.5 px-space-sm font-mono text-secondary">1.10 GB</td>
+<td class="py-3.5 px-space-sm font-mono text-secondary">72 MB</td>
+<td class="py-3.5 px-space-sm font-mono font-bold text-on-surface">7.97 GB</td>
+<td class="py-3.5 px-space-md text-right">
+<button class="inline-flex items-center gap-1 px-space-sm py-1 rounded-lg bg-status-positive text-surface-white font-label-button text-label-button hover:opacity-90 shadow-sm transition-opacity" type="button">
+<span class="material-symbols-outlined text-[14px]">delete_sweep</span>
+<span>Εκκαθάριση RAW</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 (Purge candidate highlighted) -->
+<tr class="bg-status-positive-container/10 hover:bg-status-positive-container/20 transition-colors">
+<td class="py-3.5 px-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high overflow-hidden shrink-0">
+<img class="w-full h-full object-cover" data-alt="Model posing in elegant silk dress outdoors golden hour architectural column shadow pre-fall collection" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8tTfwZnM2kHnkLv6OfepKHHETFTMiDnWBW8SU7Ha_kZODNtEJeDEhKgT6gdWcNPljUU7xazwnICeDs5udq4HTSeVCchmfAb8-k54HTeP7-p3RMGxkaFt3pyU2iVt5mV9Izlj_7j4lnYczfKeD1P357avzAQ43VwcmGx1EiWieqWIk-9QiTjuBSWc4MrD4zocJD2aDrMCmQfL0zEdnRNYv4GzqDIGCExXkdBPAejF-bP90DL1b0LcT"/>
+</div>
+<div class="min-w-0">
+<div class="flex items-center gap-1.5">
+<span class="font-title-md text-title-md text-on-surface font-semibold truncate">Pre-Fall 23 Capsule Paris</span>
+<span class="font-label-tag text-label-tag px-1.5 py-0.2 rounded bg-status-positive-container text-status-positive font-bold">&gt;6 Μηνών</span>
+</div>
+<span class="font-body-micro text-body-micro text-secondary">Αρχειοθετημένο Linesheet</span>
+</div>
+</div>
+</td>
+<td class="py-3.5 px-space-sm text-center font-mono text-secondary">410</td>
+<td class="py-3.5 px-space-sm font-mono text-status-danger font-semibold">5.20 GB</td>
+<td class="py-3.5 px-space-sm font-mono text-secondary">780 MB</td>
+<td class="py-3.5 px-space-sm font-mono text-secondary">38 MB</td>
+<td class="py-3.5 px-space-sm font-mono font-bold text-on-surface">6.02 GB</td>
+<td class="py-3.5 px-space-md text-right">
+<button class="inline-flex items-center gap-1 px-space-sm py-1 rounded-lg bg-status-positive text-surface-white font-label-button text-label-button hover:opacity-90 shadow-sm transition-opacity" type="button">
+<span class="material-symbols-outlined text-[14px]">delete_sweep</span>
+<span>Εκκαθάριση RAW</span>
+</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-lowest/80 transition-colors">
+<td class="py-3.5 px-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high overflow-hidden shrink-0">
+<img class="w-full h-full object-cover" data-alt="Macro jewelry photography sparkling diamond necklace on velvet fabric studio precision lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDUw5UlKtBBsX0IC9u6lO9Fag18K5mt1wjcj5GHooTO0c_gAUjaZmwzzEd4wDJu9MzJSppH0WQbmWSC3-gjH6VWFSJaskBzs53j6fRrxHR-0CDT0Y2_SwQRhSj3s0s4hjQXpeWgSygeRaMGEf9WDKmZphZCctIFYK-Ja7owfb2uRGjpOVO0AOJEwjx4BLtwtnl54PPmcSYJxOK4f9zRVvg0CylLIjgCXfFuvxsPBolb5fFbpAjjxsKO"/>
+</div>
+<div class="min-w-0">
+<span class="font-title-md text-title-md text-on-surface font-semibold block truncate">Haute Joaillerie 2024 Series</span>
+<span class="font-body-micro text-body-micro text-secondary">Νέο upload (προχθές) • 16-bit Master TIFF</span>
+</div>
+</div>
+</td>
+<td class="py-3.5 px-space-sm text-center font-mono text-secondary">188</td>
+<td class="py-3.5 px-space-sm font-mono text-on-surface">7.00 GB</td>
+<td class="py-3.5 px-space-sm font-mono text-secondary">940 MB</td>
+<td class="py-3.5 px-space-sm font-mono text-secondary">55 MB</td>
+<td class="py-3.5 px-space-sm font-mono font-bold text-on-surface">8.00 GB</td>
+<td class="py-3.5 px-space-md text-right">
+<button class="inline-flex items-center gap-1 px-space-sm py-1 rounded-lg bg-surface-container hover:bg-surface-container-high text-body-ink font-label-button text-label-button transition-colors" type="button">
+<span class="material-symbols-outlined text-[14px]">archive</span>
+<span>Αρχειοθέτηση</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination / Footer Meta -->
+<div class="p-space-md bg-surface-white flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm">
+<span class="font-body-micro text-body-micro text-secondary">Εμφάνιση 4 από 18 συλλογές • Σύνολο αρχείων: 3,412</span>
+<div class="flex items-center gap-1">
+<button class="w-8 h-8 rounded-lg bg-surface-container-low text-secondary flex items-center justify-center hover:text-on-surface" type="button">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</button>
+<button class="w-8 h-8 rounded-lg bg-primary text-on-primary font-bold font-body-micro text-body-micro flex items-center justify-center" type="button">1</button>
+<button class="w-8 h-8 rounded-lg bg-surface-container-low text-body-ink font-body-micro text-body-micro flex items-center justify-center hover:bg-surface-container" type="button">2</button>
+<button class="w-8 h-8 rounded-lg bg-surface-container-low text-secondary flex items-center justify-center hover:text-on-surface" type="button">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- SECTION 2: SUPERADMIN SECTION PREVIEW -->
+<div class="hidden flex-col gap-space-lg" id="view-admins">
+<!-- Superadmin Header -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-space-md">
+<div>
+<div class="flex items-center gap-space-xs font-label-eyebrow text-label-eyebrow text-secondary uppercase mb-1">
+<span class="material-symbols-outlined text-[16px] text-primary">verified_user</span>
+<span>SYSTEM PRIVILEGES &amp; SECURITY</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Διαχειριστές Συστήματος</h2>
+<p class="font-body-editorial text-body-editorial text-secondary mt-1">Διαχείριση δικαιωμάτων πρόσβασης, ρόλων και διαπιστευτηρίων showroom</p>
+</div>
+<div class="flex items-center gap-space-xs">
+<span class="px-space-sm py-1 rounded-full bg-status-positive-container text-status-positive font-label-tag text-label-tag font-bold">2FA ΥΠΟΧΡΕΩΤΙΚΟ</span>
+<span class="px-space-sm py-1 rounded-full bg-surface-container text-secondary font-label-tag text-label-tag">3 ΕΝΕΡΓΑ ACCOUNTS</span>
+</div>
+</div>
+<!-- Admin Creation & Management Bento Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-md">
+<!-- Left Column: Add New Admin Form -->
+<div class="lg:col-span-5 bg-surface-white p-space-lg rounded-xl shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex items-center gap-space-xs mb-space-sm">
+<span class="material-symbols-outlined text-primary text-[20px]">person_add</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Προσθήκη Διαχειριστή</h3>
+</div>
+<p class="font-body-micro text-body-micro text-secondary mb-space-md">
+            Ο νέος χρήστης θα λάβει email πρόσκλησης για ενεργοποίηση 2-factor authentication.
+          </p>
+<form class="space-y-space-md" onsubmit="event.preventDefault(); addNewAdmin();">
+<div>
+<label class="block font-label-eyebrow text-label-eyebrow text-on-surface uppercase mb-1" for="admin-name">Όνομα και Επώνυμο</label>
+<input class="w-full h-9 px-3 bg-surface-container-low rounded-lg font-body-default text-body-default text-on-surface placeholder:text-secondary focus:bg-surface-white focus:ring-2 focus:ring-primary focus:outline-none transition-all shadow-inner" id="admin-name" placeholder="π.χ. Αλέξανδρος Παπαδόπουλος" required="" type="text"/>
+</div>
+<div>
+<label class="block font-label-eyebrow text-label-eyebrow text-on-surface uppercase mb-1" for="admin-email">Email Showroom</label>
+<input class="w-full h-9 px-3 bg-surface-container-low rounded-lg font-body-default text-body-default text-on-surface placeholder:text-secondary focus:bg-surface-white focus:ring-2 focus:ring-primary focus:outline-none transition-all shadow-inner" id="admin-email" placeholder="alex@kollekta-studios.com" required="" type="email"/>
+</div>
+<div>
+<div class="flex items-center justify-between mb-1">
+<label class="font-label-eyebrow text-label-eyebrow text-on-surface uppercase" for="admin-password">Αρχικός Κωδικός</label>
+<button class="font-body-micro text-body-micro text-primary hover:underline" onclick="generateTempPassword()" type="button">Τυχαία δημιουργία</button>
+</div>
+<div class="relative">
+<input class="w-full h-9 px-3 pr-10 bg-surface-container-low rounded-lg font-mono text-body-micro text-on-surface placeholder:text-secondary focus:bg-surface-white focus:ring-2 focus:ring-primary focus:outline-none transition-all shadow-inner" id="admin-password" placeholder="Ελάχιστο 8 χαρακτήρες" required="" type="text"/>
+<button class="absolute right-2 top-2 text-secondary hover:text-on-surface" onclick="copyPasswordToClipboard()" type="button">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+<span class="font-body-micro text-body-micro text-secondary mt-1 block">Θα ζητηθεί άμεση αλλαγή κατά το πρώτο sign-in.</span>
+</div>
+<div class="pt-space-xs">
+<label class="block font-label-eyebrow text-label-eyebrow text-on-surface uppercase mb-1.5">Ρόλος &amp; Προνόμια</label>
+<div class="grid grid-cols-2 gap-space-xs">
+<label class="flex items-center gap-space-xs p-2 rounded-lg bg-surface-container-low cursor-pointer hover:bg-surface-container transition-colors">
+<input checked="" class="text-primary focus:ring-0" name="admin-role" type="radio" value="admin"/>
+<span class="font-body-micro text-body-micro text-on-surface font-medium">Standard Admin</span>
+</label>
+<label class="flex items-center gap-space-xs p-2 rounded-lg bg-surface-container-low cursor-pointer hover:bg-surface-container transition-colors">
+<input class="text-primary focus:ring-0" name="admin-role" type="radio" value="superadmin"/>
+<span class="font-body-micro text-body-micro text-on-surface font-medium">Superadmin</span>
+</label>
+</div>
+</div>
+<button class="w-full h-9 bg-primary text-on-primary font-label-button text-label-button rounded-lg hover:opacity-90 shadow-sm transition-all flex items-center justify-center gap-1.5 mt-space-md" type="submit">
+<span class="material-symbols-outlined text-[16px]">add_circle</span>
+<span>Προσθήκη Διαχειριστή</span>
+</button>
+</form>
+</div>
+<div class="mt-space-lg pt-space-md bg-surface-container-low/40 -mx-space-lg -mb-space-lg p-space-md flex items-center justify-between text-secondary font-body-micro text-body-micro">
+<span>Τελευταίος έλεγχος ασφαλείας: Σήμερα 04:12</span>
+<span class="text-primary font-medium">Audit Logs →</span>
+</div>
+</div>
+<!-- Right Column: Table of Active Admins -->
+<div class="lg:col-span-7 bg-surface-white p-space-lg rounded-xl shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-space-md">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Ενεργοί Διαχειριστές</h3>
+<p class="font-body-micro text-body-micro text-secondary">Λογαριασμοί με πρόσβαση στο Kollekta Media Suite</p>
+</div>
+<span class="font-label-tag text-label-tag px-2 py-0.5 rounded bg-surface-container text-body-ink font-semibold">3 Λογαριασμοί</span>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left font-body-default text-body-default border-collapse">
+<thead>
+<tr class="bg-surface-container-low text-secondary font-label-eyebrow text-label-eyebrow uppercase tracking-wider">
+<th class="py-2.5 px-space-sm">Όνομα Χρήστη</th>
+<th class="py-2.5 px-space-sm">Email</th>
+<th class="py-2.5 px-space-sm text-center">Κατάσταση</th>
+<th class="py-2.5 px-space-sm text-right">Ενέργεια</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-low">
+<!-- Current Superadmin (Self) -->
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="py-3 px-space-sm">
+<div class="flex items-center gap-space-xs">
+<div class="w-7 h-7 rounded-full bg-primary text-on-primary font-bold text-[11px] flex items-center justify-center shrink-0">
+                        ΕΜ
+                      </div>
+<div class="min-w-0">
+<div class="flex items-center gap-1.5 flex-wrap">
+<span class="font-title-md text-title-md text-on-surface font-semibold truncate">Έλενα Μανωλά</span>
+<span class="bg-secondary-container text-on-secondary-fixed-variant font-label-tag text-label-tag px-1.5 py-0.2 rounded-full font-bold">superadmin</span>
+<span class="bg-surface-container-high text-on-surface font-label-tag text-label-tag px-1.5 py-0.2 rounded-full font-bold">εσύ</span>
+</div>
+<span class="font-body-micro text-body-micro text-secondary block">Studio Director</span>
+</div>
+</div>
+</td>
+<td class="py-3 px-space-sm font-mono text-body-micro text-secondary">elena.m@kollekta.com</td>
+<td class="py-3 px-space-sm text-center">
+<span class="inline-flex items-center gap-1 font-body-micro text-body-micro text-status-positive">
+<span class="w-1.5 h-1.5 rounded-full bg-status-positive"></span>
+                      Ενεργός
+                    </span>
+</td>
+<td class="py-3 px-space-sm text-right">
+<span class="text-secondary font-body-micro text-body-micro italic">Προστατευμένο</span>
+</td>
+</tr>
+<!-- Admin 2 -->
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="py-3 px-space-sm">
+<div class="flex items-center gap-space-xs">
+<div class="w-7 h-7 rounded-full bg-surface-container-high text-on-surface font-bold text-[11px] flex items-center justify-center shrink-0">
+                        ΝΚ
+                      </div>
+<div class="min-w-0">
+<div class="flex items-center gap-1.5 flex-wrap">
+<span class="font-title-md text-title-md text-on-surface font-semibold truncate">Νικόλαος Κανελλής</span>
+<span class="bg-surface-container text-secondary font-label-tag text-label-tag px-1.5 py-0.2 rounded-full font-bold">admin</span>
+</div>
+<span class="font-body-micro text-body-micro text-secondary block">Head of Merchandising</span>
+</div>
+</div>
+</td>
+<td class="py-3 px-space-sm font-mono text-body-micro text-secondary">n.kanellis@kollekta.com</td>
+<td class="py-3 px-space-sm text-center">
+<span class="inline-flex items-center gap-1 font-body-micro text-body-micro text-status-positive">
+<span class="w-1.5 h-1.5 rounded-full bg-status-positive"></span>
+                      Ενεργός
+                    </span>
+</td>
+<td class="py-3 px-space-sm text-right">
+<button class="inline-flex items-center gap-1 px-2 py-1 rounded bg-error-container/40 text-error hover:bg-error-container font-label-button text-label-button transition-colors" onclick="confirmDeleteAdmin('Νικόλαος Κανελλής')" type="button">
+<span class="material-symbols-outlined text-[14px]">delete</span>
+<span>Διαγραφή</span>
+</button>
+</td>
+</tr>
+<!-- Admin 3 -->
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="py-3 px-space-sm">
+<div class="flex items-center gap-space-xs">
+<div class="w-7 h-7 rounded-full bg-surface-container-high text-on-surface font-bold text-[11px] flex items-center justify-center shrink-0">
+                        ΚΔ
+                      </div>
+<div class="min-w-0">
+<div class="flex items-center gap-1.5 flex-wrap">
+<span class="font-title-md text-title-md text-on-surface font-semibold truncate">Κάτια Δασκάλου</span>
+<span class="bg-surface-container text-secondary font-label-tag text-label-tag px-1.5 py-0.2 rounded-full font-bold">admin</span>
+</div>
+<span class="font-body-micro text-body-micro text-secondary block">Photo Retoucher / Curator</span>
+</div>
+</div>
+</td>
+<td class="py-3 px-space-sm font-mono text-body-micro text-secondary">k.daskalou@kollekta.com</td>
+<td class="py-3 px-space-sm text-center">
+<span class="inline-flex items-center gap-1 font-body-micro text-body-micro text-secondary">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                      Αναμονή 2FA
+                    </span>
+</td>
+<td class="py-3 px-space-sm text-right">
+<button class="inline-flex items-center gap-1 px-2 py-1 rounded bg-error-container/40 text-error hover:bg-error-container font-label-button text-label-button transition-colors" onclick="confirmDeleteAdmin('Κάτια Δασκάλου')" type="button">
+<span class="material-symbols-outlined text-[14px]">delete</span>
+<span>Διαγραφή</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Security Notice Footer -->
+<div class="mt-space-md p-space-sm bg-surface-container-low rounded-lg flex items-center justify-between text-secondary font-body-micro text-body-micro">
+<span class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary text-[16px]">shield</span>
+            Οι ενέργειες διαγραφής και ανάθεσης ρόλων καταγράφονται στο immutable audit log.
+          </span>
+<button class="font-label-button text-label-button text-primary hover:underline" onclick="openPasswordModal()" type="button">
+            Επαναφορά Κωδικών
+          </button>
+</div>
+</div>
+</div>
+</div>
+<!-- PASSWORD RESET MODAL (Hidden by default) -->
+<div class="fixed inset-0 z-50 bg-on-surface/40 backdrop-blur-sm hidden items-center justify-center p-space-md" id="password-modal">
+<div class="bg-surface-white w-full max-w-md rounded-xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+<div class="p-space-lg flex items-center justify-between border-b border-surface-container-low">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[22px]">lock_reset</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Αλλαγή Κωδικού Πρόσβασης</h3>
+</div>
+<button class="p-1 rounded-lg text-secondary hover:bg-surface-container-low hover:text-on-surface" onclick="closePasswordModal()" type="button">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<form class="p-space-lg space-y-space-md" onsubmit="event.preventDefault(); submitPasswordChange();">
+<div>
+<label class="block font-label-eyebrow text-label-eyebrow text-on-surface uppercase mb-1" for="current-password">Τρέχων Κωδικός</label>
+<input class="w-full h-9 px-3 bg-surface-container-low rounded-lg font-body-default text-body-default text-on-surface placeholder:text-secondary focus:bg-surface-white focus:ring-2 focus:ring-primary focus:outline-none transition-all shadow-inner" id="current-password" placeholder="••••••••••••" required="" type="password"/>
+</div>
+<div>
+<label class="block font-label-eyebrow text-label-eyebrow text-on-surface uppercase mb-1" for="new-password">Νέος Κωδικός</label>
+<input class="w-full h-9 px-3 bg-surface-container-low rounded-lg font-body-default text-body-default text-on-surface placeholder:text-secondary focus:bg-surface-white focus:ring-2 focus:ring-primary focus:outline-none transition-all shadow-inner" id="new-password" placeholder="••••••••••••" required="" type="password"/>
+<span class="font-body-micro text-body-micro text-secondary mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">info</span>
+            Τουλάχιστον 8 χαρακτήρες, με αριθμό και σύμβολο.
+          </span>
+</div>
+<div>
+<label class="block font-label-eyebrow text-label-eyebrow text-on-surface uppercase mb-1" for="confirm-password">Επιβεβαίωση Νέου Κωδικού</label>
+<input class="w-full h-9 px-3 bg-surface-container-low rounded-lg font-body-default text-body-default text-on-surface placeholder:text-secondary focus:bg-surface-white focus:ring-2 focus:ring-primary focus:outline-none transition-all shadow-inner" id="confirm-password" placeholder="••••••••••••" required="" type="password"/>
+</div>
+<div class="pt-space-sm flex items-center justify-end gap-space-sm">
+<button class="px-space-md h-9 rounded-lg bg-surface-container-low text-body-ink font-label-button text-label-button hover:bg-surface-container transition-colors" onclick="closePasswordModal()" type="button">
+            Ακύρωση
+          </button>
+<button class="px-space-md h-9 rounded-lg bg-primary text-on-primary font-label-button text-label-button hover:opacity-90 shadow-sm transition-opacity" type="submit">
+            Ενημέρωση Κωδικού
+          </button>
+</div>
+</form>
+</div>
+</div>
+</div>
+<script>
+  function switchView(tab) {
+    const storageView = document.getElementById('view-storage');
+    const adminsView = document.getElementById('view-admins');
+    const storageTab = document.getElementById('tab-storage');
+    const adminsTab = document.getElementById('tab-admins');
+
+    if (tab === 'storage') {
+      storageView.classList.remove('hidden');
+      storageView.classList.add('flex');
+      adminsView.classList.add('hidden');
+      adminsView.classList.remove('flex');
+
+      storageTab.className = "flex items-center gap-space-xs px-space-md py-2 rounded-lg font-label-button text-label-button transition-all bg-surface-white text-on-surface shadow-sm";
+      adminsTab.className = "flex items-center gap-space-xs px-space-md py-2 rounded-lg font-label-button text-label-button transition-all text-on-surface-variant hover:text-on-surface";
+    } else {
+      adminsView.classList.remove('hidden');
+      adminsView.classList.add('flex');
+      storageView.classList.add('hidden');
+      storageView.classList.remove('flex');
+
+      adminsTab.className = "flex items-center gap-space-xs px-space-md py-2 rounded-lg font-label-button text-label-button transition-all bg-surface-white text-on-surface shadow-sm";
+      storageTab.className = "flex items-center gap-space-xs px-space-md py-2 rounded-lg font-label-button text-label-button transition-all text-on-surface-variant hover:text-on-surface";
+    }
+  }
+
+  function openPasswordModal() {
+    const modal = document.getElementById('password-modal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+  }
+
+  function closePasswordModal() {
+    const modal = document.getElementById('password-modal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
+
+  function generateTempPassword() {
+    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%';
+    let pass = '';
+    for (let i = 0; i < 12; i++) {
+      pass += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    const input = document.getElementById('admin-password');
+    if (input) input.value = pass;
+  }
+
+  function copyPasswordToClipboard() {
+    const input = document.getElementById('admin-password');
+    if (input && input.value) {
+      navigator.clipboard.writeText(input.value);
+    }
+  }
+
+  function addNewAdmin() {
+    const name = document.getElementById('admin-name').value;
+    alert('Ο διαχειριστής "' + name + '" προστέθηκε με επιτυχία.');
+    document.getElementById('admin-name').value = '';
+    document.getElementById('admin-email').value = '';
+    document.getElementById('admin-password').value = '';
+  }
+
+  function confirmDeleteAdmin(name) {
+    if (confirm('Είστε βέβαιοι ότι θέλετε να διαγράψετε τον διαχειριστή ' + name + ';')) {
+      alert('Ο διαχειριστής διαγράφηκε.');
+    }
+  }
+
+  function triggerBatchArchive() {
+    if (confirm('Επιβεβαίωση μαζικής αρχειοθέτησης RAW αρχείων για τις συλλογές AW23 & Pre-Fall 23; Εκτιμώμενη εξοικονόμηση: 12.8 GB.')) {
+      alert('Η αρχειοθέτηση ξεκίνησε στο παρασκήνιο. Ο διαθέσιμος χώρος θα ανανεωθεί εντός ολίγων λεπτών.');
+    }
+  }
+
+  function submitPasswordChange() {
+    alert('Ο κωδικός πρόσβασης άλλαξε επιτυχώς.');
+    closePasswordModal();
+  }
+</script></main><footer class="w-full bg-surface-white mt-space-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="max-w-7xl mx-auto px-gutter py-space-md flex flex-col md:flex-row items-center justify-between gap-space-sm text-secondary font-body-micro text-body-micro"><div>© 2025 Kollekta Media Suite. Studio Operations &amp; Luxury Showroom Merchandising.</div><div class="flex items-center gap-space-md"><span>Πολιτική Απορρήτου</span><span>Όροι Χρήσης</span><span>Τεκμηρίωση API</span></div></div></footer></body></html>

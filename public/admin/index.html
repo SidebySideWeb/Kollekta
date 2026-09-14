@@ -6,7 +6,7 @@
   <title>Kollekta Admin</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -15,8 +15,11 @@
     <header class="topbar">
       <div class="topbar-inner">
         <div class="brand-wrap">
-          <img id="brand-logo" class="brand-logo hidden" alt="">
-          <h1 id="brand-name">Kollekta</h1>
+          <img id="brand-logo" class="brand-logo brand-logo-full" src="/shared/kollekta-lockup.svg" alt="Kollekta">
+          <div class="brand-text hidden">
+            <h1 id="brand-name">Kollekta</h1>
+            <span class="brand-eyebrow">B2B Media Suite</span>
+          </div>
           <nav class="top-nav">
             <button type="button" class="nav-btn active" data-view="collections">Συλλογές</button>
             <button type="button" class="nav-btn" data-view="customers">Πελάτες</button>
@@ -26,8 +29,8 @@
           </nav>
         </div>
         <div class="topbar-actions">
-          <button type="button" id="change-password-btn" class="btn btn-secondary">Κωδικός</button>
-          <button type="button" id="logout-btn" class="btn btn-secondary">Αποσύνδεση</button>
+          <button type="button" id="change-password-btn" class="btn btn-ghost">Κωδικός</button>
+          <button type="button" id="logout-btn" class="btn btn-ghost btn-logout">Αποσύνδεση</button>
         </div>
       </div>
     </header>
@@ -35,14 +38,21 @@
     <div class="app">
       <main id="view-collections" class="view">
         <section id="collections-list-view">
-          <div class="view-toolbar">
-            <h2>Συλλογές</h2>
+          <div class="collections-hero">
+            <div class="collections-hero-copy">
+              <p class="view-eyebrow">Lookbooks &amp; Linesheets</p>
+              <h2>Συλλογές</h2>
+              <p class="view-subtitle">Διαχείριση και δημοσίευση φωτογραφικών καταλόγων χονδρικής.</p>
+            </div>
             <button type="button" id="new-collection-btn" class="btn btn-primary">Νέα συλλογή</button>
           </div>
-          <form id="new-collection-form" class="inline-form hidden">
-            <input type="text" id="collection-name-input" placeholder="Όνομα συλλογής" required>
-            <button type="submit" class="btn btn-primary">Δημιουργία</button>
-            <button type="button" id="cancel-collection-btn" class="btn btn-secondary">Ακύρωση</button>
+          <form id="new-collection-form" class="inline-form panel collections-create-panel hidden">
+            <p class="form-eyebrow">Ταχεία δημιουργία</p>
+            <div class="collections-create-row">
+              <input type="text" id="collection-name-input" placeholder="π.χ. Summer 2026 Lookbook" required>
+              <button type="submit" class="btn btn-primary">Δημιουργία</button>
+              <button type="button" id="cancel-collection-btn" class="btn btn-secondary">Ακύρωση</button>
+            </div>
           </form>
           <div id="collections-list" class="card-grid"></div>
         </section>
@@ -57,12 +67,13 @@
       </main>
 
       <main id="view-customers" class="view hidden">
-        <div class="view-header">
-          <h2>Πελάτες</h2>
-          <p class="view-subtitle">Διαχείριση πελατολογίου και καταστάσεων λογαριασμών.</p>
-        </div>
-        <div class="view-toolbar">
-          <div class="toolbar-actions" style="margin-left:auto;">
+        <div class="customers-hero">
+          <div class="customers-hero-copy">
+            <p class="view-eyebrow">CRM &amp; Showroom Access</p>
+            <h2>Πελάτες</h2>
+            <p class="view-subtitle">Διαχείριση πελατολογίου, αδειών πρόσβασης και αποστολή κωδικών.</p>
+          </div>
+          <div class="toolbar-actions">
             <a class="btn btn-secondary" href="/api/admin/samples/customers" download="kollekta-customers-sample.xlsx">Δείγμα Excel</a>
             <label class="btn btn-secondary file-btn">
               Εισαγωγή Excel
@@ -71,13 +82,13 @@
             <button type="button" id="new-customer-btn" class="btn btn-primary">Νέος πελάτης</button>
           </div>
         </div>
-        <form id="new-customer-form" class="panel hidden">
+        <form id="new-customer-form" class="panel customers-create-panel hidden">
           <div class="form-grid">
             <input type="text" name="name" placeholder="Όνομα *" required>
             <input type="tel" name="phone" placeholder="Κινητό *" required>
             <input type="email" name="email" placeholder="Email">
             <input type="text" name="erpCode" placeholder="ERP κωδικός">
-            <select name="defaultAccessMode">
+            <select name="defaultAccessMode" data-feature="orderFiltering">
               <option value="full_access">Πρόσβαση: Πλήρης πρόσβαση</option>
               <option value="browse_all_download_order">Πρόσβαση: Περιήγηση + λήψη παραγγελίας</option>
               <option value="order_only">Πρόσβαση: Μόνο παραγγελία</option>
@@ -97,27 +108,29 @@
         <label class="checkbox-label import-option"><input type="checkbox" id="import-send-codes"> Αποστολή κωδικών κατά την εισαγωγή</label>
         <div id="customer-result" class="panel hidden"></div>
         <div id="import-errors" class="panel hidden"></div>
-        <div class="filter-row">
-          <input type="search" id="customer-search" placeholder="Αναζήτηση πελάτη…">
-          <select id="customer-tag-filter">
-            <option value="">Όλες οι ετικέτες</option>
-          </select>
-          <select id="customer-status-filter">
-            <option value="">Όλες οι καταστάσεις</option>
-            <option value="active">Ενεργός</option>
-            <option value="disabled">Ανενεργός</option>
-          </select>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th class="col-check"><input type="checkbox" id="customers-select-all" aria-label="Επιλογή όλων"></th>
-                <th>Όνομα</th><th>Τηλέφωνο</th><th>Email</th><th>Κατάσταση</th><th>Πρόσβαση</th><th>Κανάλι</th><th>Tags</th><th>Ενέργειες</th>
-              </tr>
-            </thead>
-            <tbody id="customers-body"></tbody>
-          </table>
+        <div class="customers-board">
+          <div class="filter-row">
+            <input type="search" id="customer-search" placeholder="Αναζήτηση πελάτη…">
+            <select id="customer-tag-filter" data-feature="tags">
+              <option value="">Όλες οι ετικέτες</option>
+            </select>
+            <select id="customer-status-filter">
+              <option value="">Όλες οι καταστάσεις</option>
+              <option value="active">Ενεργός</option>
+              <option value="disabled">Ανενεργός</option>
+            </select>
+          </div>
+          <div class="table-wrap customers-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th class="col-check"><input type="checkbox" id="customers-select-all" aria-label="Επιλογή όλων"></th>
+                  <th>Όνομα</th><th>Τηλέφωνο</th><th>Email</th><th>Κατάσταση</th><th data-feature="orderFiltering">Πρόσβαση</th><th>Κανάλι</th><th data-feature="tags">Tags</th><th>Ενέργειες</th>
+                </tr>
+              </thead>
+              <tbody id="customers-body"></tbody>
+            </table>
+          </div>
         </div>
       </main>
 
@@ -183,7 +196,7 @@
         <div class="bulk-bar-actions">
           <button type="button" class="btn btn-ghost" id="bulk-resend-btn">Επαναποστολή κωδικού</button>
           <button type="button" class="btn btn-ghost" id="bulk-disable-btn">Απενεργοποίηση</button>
-          <button type="button" class="btn btn-ghost" id="bulk-tags-btn">Tags</button>
+          <button type="button" class="btn btn-ghost" id="bulk-tags-btn" data-feature="tags">Tags</button>
           <button type="button" class="btn btn-danger" id="bulk-delete-btn">Διαγραφή</button>
           <button type="button" class="bulk-dismiss" id="bulk-dismiss-btn" aria-label="Κλείσιμο">×</button>
         </div>

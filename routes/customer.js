@@ -84,23 +84,31 @@ function requireCustomer(req, res, next) {
   return next();
 }
 
-function setSessionCookie(res, token) {
-  res.cookie(SESSION_COOKIE, token, {
-    httpOnly: true,
-    signed: true,
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: SESSION_DAYS * 24 * 60 * 60 * 1000,
-  });
+function requestIsHttps(req) {
+  if (process.env.NODE_ENV === 'production') return true;
+  const proto = String(req.get('x-forwarded-proto') || '')
+    .split(',')[0]
+    .trim()
+    .toLowerCase();
+  return proto === 'https';
 }
 
-function clearSessionCookie(res) {
-  res.clearCookie(SESSION_COOKIE, {
+function sessionCookieOptions(req) {
+  return {
     httpOnly: true,
     signed: true,
     sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
-  });
+    secure: requestIsHttps(req),
+    maxAge: SESSION_DAYS * 24 * 60 * 60 * 1000,
+  };
+}
+
+function setSessionCookie(req, res, token) {
+  res.cookie(SESSION_COOKIE, token, sessionCookieOptions(req));
+}
+
+function clearSessionCookie(req, res) {
+  res.clearCookie(SESSION_COOKIE, sessionCookieOptions(req));
 }
 
 router.post('/auth/login', (req, res) => {
@@ -140,7 +148,7 @@ router.post('/auth/login', (req, res) => {
      VALUES (?, ?, ?, ?)`
   ).run(token, customer.id, expiresAt, req.get('user-agent') || null);
 
-  setSessionCookie(res, token);
+  setSessionCookie(req, res, token);
   res.json({ ok: true });
 });
 
@@ -182,7 +190,7 @@ router.post('/auth/logout', (req, res) => {
   if (token) {
     db.prepare('DELETE FROM sessions WHERE token = ?').run(token);
   }
-  clearSessionCookie(res);
+  clearSessionCookie(req, res);
   res.json({ ok: true });
 });
 
@@ -198,7 +206,7 @@ router.post('/auth/reset-own', requireCustomer, async (req, res) => {
   const updated = db.prepare('SELECT * FROM customers WHERE id = ?').get(customer.id);
   const sendResult = await sendAuthMessage(updated, 'reset', { code: newCode });
 
-  clearSessionCookie(res);
+  clearSessionCookie(req, res);
   res.json({
     ok: true,
     message: 'Στάλθηκε νέος κωδικός. Συνδέσου ξανά με τον νέο κωδικό.',

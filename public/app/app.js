@@ -325,7 +325,7 @@ async function api(url, options = {}) {
 
 async function applyBranding() {
   branding = await fetch('/api/branding').then(r => r.json());
-  document.documentElement.style.setProperty('--accent', branding.accentColor || '#8b7bf0');
+  document.documentElement.style.setProperty('--accent', branding.accentColor || '#2563EB');
   if (branding.companyName) document.title = branding.companyName;
   const footer = document.getElementById('site-footer');
   const parts = [];
@@ -338,20 +338,41 @@ async function applyBranding() {
 }
 
 function brandLogoHtml(className = 'header-logo') {
-  if (!branding.logoPath) return '';
-  const alt = escapeHtml(branding.companyName || '');
-  return `<img src="${escapeHtml(branding.logoPath)}" alt="${alt}" class="${className}">`;
+  const path = branding.logoPath || '/shared/kollekta-lockup.svg';
+  const alt = escapeHtml(branding.companyName || 'Kollekta');
+  const isMarkOnly = /kollekta-mark\.svg$/i.test(path);
+  const cls = isMarkOnly ? `${className} header-logo-mark` : `${className} header-logo-lockup`;
+  return `<img src="${escapeHtml(path)}" alt="${alt}" class="${cls}">`;
+}
+
+function clientBrandHtml() {
+  const name = String(branding.companyName || '').trim() || 'Kollekta';
+  const src = String(branding.logoPath || '').trim() || '/shared/kollekta-lockup.svg';
+  return `<div class="client-brand" title="${escapeHtml(name)}">
+    <img src="${escapeHtml(src)}" alt="${escapeHtml(name)}" class="client-brand-logo">
+  </div>`;
+}
+
+function customerChipHtml(me) {
+  const name = String(me?.name || '').trim();
+  if (!name) return '';
+  return `<p class="header-welcome">Καλωσήρθες, <strong>${escapeHtml(name)}</strong></p>`;
 }
 
 function renderLogin() {
-  const loginHeading = branding.logoPath
-    ? `<img src="${escapeHtml(branding.logoPath)}" alt="" class="login-logo">`
-    : `<h1>${escapeHtml(branding.companyName || 'Kollekta')}</h1>`;
-  if (!branding.logoPath && !branding.companyName) document.title = 'Kollekta';
+  const company = escapeHtml(branding.companyName || 'Kollekta');
+  if (!branding.companyName) document.title = 'Kollekta';
   root.innerHTML = `<div class="login-screen">
+    <div class="login-phase">
+      <span class="login-phase-dot" aria-hidden="true"></span>
+      <span>B2B Session Auth</span>
+    </div>
     <div class="form-card">
       <div class="login-brand" id="login-brand">
-        ${loginHeading}
+        ${brandLogoHtml('login-logo')}
+        <h1 class="visually-hidden">${company}</h1>
+        <h2 class="login-heading">Σύνδεση</h2>
+        <p class="login-sub">Είσοδος στον χώρο προβολής και λήψης συλλογών</p>
       </div>
       <div id="login-form-wrap">
         <div class="form-field">
@@ -363,13 +384,12 @@ function renderLogin() {
           <input type="text" id="code" class="code-input" placeholder="Κωδικός" autocapitalize="characters" autocomplete="off">
         </div>
         <p id="login-error" class="error hidden"></p>
-        <button class="btn btn-primary" id="login-btn">Σύνδεση</button>
+        <button class="btn btn-primary" id="login-btn">Σύνδεση →</button>
         <button class="link-btn" id="forgot-btn">Ξέχασα τον κωδικό μου</button>
       </div>
       <div id="reset-form-wrap" class="hidden">
         <div class="login-brand">
-          <span class="reset-icon" aria-hidden="true">🔑</span>
-          <h1>Επαναφορά</h1>
+          <h2 class="login-heading">Επαναφορά</h2>
         </div>
         <p class="reset-intro">Αν ο αριθμός είναι καταχωρημένος, θα λάβεις νέο κωδικό.</p>
         <div class="form-field">
@@ -459,10 +479,11 @@ async function renderCollections() {
   } catch { return; }
 
   root.innerHTML = `<header class="header header-collections">
-    ${brandLogoHtml()}
+    <div class="header-brand">
+      ${brandLogoHtml()}
+    </div>
     <div class="header-collections-main">
-      <h1>Συλλογές</h1>
-      <span class="header-user">${escapeHtml(me.name || '')}</span>
+      ${customerChipHtml(me)}
     </div>
     <div class="header-account">
       <button type="button" class="btn btn-ghost" id="reset-code-btn">Νέος κωδικός</button>
@@ -470,7 +491,14 @@ async function renderCollections() {
     </div>
   </header>
   <div class="screen collections-screen">
-    <h2 class="page-title">Συλλογές</h2>
+    <div class="collections-hero">
+      <div class="collections-hero-copy">
+        <p class="view-eyebrow">Wholesale Lookbooks &amp; Press Kits</p>
+        <h2 class="page-title">Συλλογές</h2>
+        <p class="page-subtitle">Διαθέσιμες συλλογές φωτογραφιών για προβολή και λήψη υλικού</p>
+      </div>
+      ${clientBrandHtml()}
+    </div>
     <div class="collection-list" id="collection-list"></div>
   </div>`;
 
@@ -491,9 +519,13 @@ async function renderCollections() {
     return `
     <article class="collection-card" data-id="${c.id}">
       <div class="collection-card-cover">${cover}
-        <div class="collection-card-scrim"><h2>${escapeHtml(c.name)}</h2></div>
+        <span class="pill pill-published collection-status">Δημοσιευμένη</span>
       </div>
-      <div class="collection-card-meta"><p>${meta}</p></div>
+      <div class="collection-card-body">
+        <h2>${escapeHtml(c.name)}</h2>
+        <p class="collection-card-meta-line">${meta}</p>
+        <div class="collection-card-footer"><span>Προβολή συλλογής →</span></div>
+      </div>
     </article>`;
   }).join('');
   list.querySelectorAll('.collection-card').forEach(card => {
