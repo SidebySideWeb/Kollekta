@@ -1229,9 +1229,16 @@ a.btn-ghost {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
+  /* Keep closed sheet fully invisible so margin / safe-area can't peek over the action bar */
+  visibility: hidden;
+  transition: visibility 0s linear 0.35s;
 }
 
-.download-sheet-host.open { pointer-events: auto; }
+.download-sheet-host.open {
+  pointer-events: auto;
+  visibility: visible;
+  transition: visibility 0s;
+}
 
 .download-sheet-backdrop {
   position: absolute;
@@ -1254,7 +1261,8 @@ a.btn-ghost {
   padding: var(--container-margin);
   padding-top: calc(var(--container-margin) + 12px);
   padding-bottom: calc(var(--container-margin) + env(safe-area-inset-bottom));
-  transform: translateY(100%);
+  /* Extra offset covers desktop margin-bottom so the handle never peeks when closed */
+  transform: translateY(calc(100% + var(--container-margin, 24px) + 24px));
   transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   max-width: 480px;
   width: 100%;
