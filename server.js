@@ -165,6 +165,9 @@ app.post('/api/admin-auth/reset', (req, res) => {
   res.json({ ok: true, message: 'Ο κωδικός ενημερώθηκε. Συνδέσου με τον νέο κωδικό.' });
 });
 
+app.get('/favicon.ico', (_req, res) => {
+  res.sendFile(path.join(sharedDir, 'favicon.ico'));
+});
 app.get('/shared/tokens.css', (_req, res) => {
   res.type('css').sendFile(tokensCss);
 });
