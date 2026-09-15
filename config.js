@@ -44,12 +44,13 @@ function parseBoolEnv(value, defaultValue) {
 }
 
 const PLAN_RAW = String(process.env.PLAN || 'basic').trim().toLowerCase();
-const PLAN = ['basic', 'pro', 'business'].includes(PLAN_RAW) ? PLAN_RAW : 'basic';
+const PLAN = ['basic', 'pro', 'business', 'demo'].includes(PLAN_RAW) ? PLAN_RAW : 'basic';
 const planIsProPlus = PLAN === 'pro' || PLAN === 'business';
 
 function planDefaultRetentionMonths(plan) {
   if (plan === 'business') return null;
   if (plan === 'pro') return 24;
+  if (plan === 'demo') return 1;
   return 12;
 }
 
